@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Services\GeminiChatService;
+use App\Services\AiChatService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
     public function __construct(
-        private readonly GeminiChatService $chat,
+        private readonly AiChatService $chat,
     ) {}
 
     public function store(Request $request): JsonResponse

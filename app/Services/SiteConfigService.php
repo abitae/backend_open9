@@ -8,14 +8,20 @@ use App\Models\AiChatSetting;
 use App\Models\BlogPost;
 use App\Models\FooterLinkGroup;
 use App\Models\HomeFeatureCard;
+use App\Models\HomeHeroPanelPill;
+use App\Models\HomeHeroPanelSetting;
+use App\Models\HomeHeroPanelStat;
+use App\Models\HomeHeroShowcaseCard;
 use App\Models\HomePricingPlan;
 use App\Models\HomeQuickLink;
+use App\Models\HomeSectionSetting;
 use App\Models\HomeStat;
 use App\Models\HomeWorkflowStep;
 use App\Models\LegalPage;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\Service;
+use App\Models\Setting;
 use App\Models\SiteBranding;
 use App\Models\SocialLink;
 use App\Models\Testimonial;
@@ -47,7 +53,7 @@ class SiteConfigService
 
             return [
                 'branding' => [
-                    'site_name' => $branding->site_name,
+                    'site_name' => filled($branding->site_name) ? $branding->site_name : null,
                     'tagline' => $branding->tagline,
                     'logo_url' => $this->media->url($branding->logo_path),
                     'logo_dark_url' => $this->media->url($branding->logo_dark_path),
@@ -64,7 +70,7 @@ class SiteConfigService
                             'url' => $branding->hero_cta_secondary_url,
                         ],
                     ],
-                    'background_video_url' => $branding->background_video_url,
+                    'background_video_url' => $this->media->url($branding->background_video_url),
                     'footer_description' => $branding->footer_description,
                     'copyright_text' => $branding->copyright_text,
                     'seo_description' => $branding->seo_description,
@@ -92,11 +98,19 @@ class SiteConfigService
                     ->where('is_visible', true)
                     ->orderBy('sort_order')
                     ->get(['platform', 'url'])
+                    ->map(fn (SocialLink $link): array => [
+                        'platform' => $link->platform,
+                        'url' => $link->url,
+                    ])
+                    ->values()
                     ->all(),
                 'chat' => [
                     'is_enabled' => $chat->is_enabled,
                     'fab_label' => $chat->fab_label,
                     'welcome_message' => $chat->welcome_message,
+                ],
+                'store' => [
+                    'usd_pen_rate' => $this->usdPenRate(),
                 ],
             ];
         });
@@ -108,36 +122,179 @@ class SiteConfigService
     public function homePayload(): array
     {
         return Cache::remember('api.home', 600, function (): array {
+            $panel = HomeHeroPanelSetting::query()->firstOrCreate(['id' => 1], [
+                'badge_label' => 'Servicios tecnológicos · open9.dev',
+                'headline_pre' => 'Innovando el',
+                'headline_highlight' => 'futuro tech',
+                'headline_subtitle' => 'Hardware, cloud e',
+                'headline_subtitle_highlight' => 'software a medida',
+                'show_site_name_chip' => true,
+                'description' => 'Diseñamos, desplegamos y mantenemos infraestructura en servidores físicos y virtuales, con integración en AWS, Azure y Google Cloud.',
+                'cta_label' => 'Solicitar cotización',
+                'cta_url' => '/contacto',
+                'cta_icon' => 'Download',
+                'quote_kicker' => 'Infraestructura · Cloud · Desarrollo',
+                'quote_primary' => 'Tu partner tecnológico',
+                'quote_secondary' => 'de principio a fin.',
+                'quote_footer' => 'open9.dev',
+            ]);
+
             return [
+                'hero_panel' => [
+                    'badge_label' => $panel->badge_label,
+                    'headline' => [
+                        'pre' => $panel->headline_pre,
+                        'highlight' => $panel->headline_highlight,
+                        'subtitle' => $panel->headline_subtitle,
+                        'subtitle_highlight' => $panel->headline_subtitle_highlight,
+                        'show_site_name_chip' => (bool) $panel->show_site_name_chip,
+                    ],
+                    'description' => $panel->description,
+                    'cta' => [
+                        'label' => $panel->cta_label,
+                        'url' => $panel->cta_url,
+                        'icon' => $panel->cta_icon,
+                    ],
+                    'quote' => [
+                        'kicker' => $panel->quote_kicker,
+                        'primary' => $panel->quote_primary,
+                        'secondary' => $panel->quote_secondary,
+                        'footer' => $panel->quote_footer,
+                    ],
+                    'media_type' => $panel->media_type ?? 'none',
+                    'image_url' => filled($panel->image_path ?? null)
+                        ? $this->media->url($panel->image_path)
+                        : null,
+                    'video_url' => filled($panel->video_path ?? null)
+                        ? $this->media->url($panel->video_path)
+                        : null,
+                    'stats' => HomeHeroPanelStat::query()
+                        ->where('is_visible', true)
+                        ->where('status', RecordStatus::Active)
+                        ->orderBy('sort_order')
+                        ->get(['value', 'suffix', 'label'])
+                        ->map(fn (HomeHeroPanelStat $stat): array => [
+                            'value' => $stat->value,
+                            'suffix' => $stat->suffix,
+                            'label' => $stat->label,
+                        ])
+                        ->values()
+                        ->all(),
+                    'pills' => HomeHeroPanelPill::query()
+                        ->where('is_visible', true)
+                        ->where('status', RecordStatus::Active)
+                        ->orderBy('sort_order')
+                        ->pluck('label')
+                        ->values()
+                        ->all(),
+                ],
+                'hero_showcase' => [
+                    'cards' => HomeHeroShowcaseCard::query()
+                        ->where('is_visible', true)
+                        ->where('status', RecordStatus::Active)
+                        ->orderBy('sort_order')
+                        ->get(['layout', 'title', 'description', 'icon', 'media_type', 'image_path', 'video_path'])
+                        ->map(fn (HomeHeroShowcaseCard $card): array => [
+                            'layout' => $card->layout,
+                            'title' => $card->title,
+                            'description' => $card->description,
+                            'icon' => $card->icon,
+                            'media_type' => $card->media_type ?? 'none',
+                            'image_url' => ($card->media_type ?? 'none') === 'image'
+                                ? $this->media->url($card->image_path)
+                                : null,
+                            'video_url' => ($card->media_type ?? 'none') === 'video'
+                                ? $this->media->url($card->video_path)
+                                : null,
+                        ])
+                        ->values()
+                        ->all(),
+                ],
+                'section_headers' => HomeSectionSetting::query()
+                    ->where('is_visible', true)
+                    ->orderBy('sort_order')
+                    ->get(['section_key', 'label', 'title', 'title_highlight', 'description', 'cta_label', 'cta_url'])
+                    ->mapWithKeys(fn (HomeSectionSetting $section): array => [
+                        $section->section_key => [
+                            'label' => $section->label,
+                            'title' => $section->title,
+                            'title_highlight' => $section->title_highlight,
+                            'description' => $section->description,
+                            'cta_label' => $section->cta_label,
+                            'cta_url' => $section->cta_url,
+                            'is_visible' => true,
+                        ],
+                    ])
+                    ->all(),
                 'stats' => HomeStat::query()
                     ->where('is_visible', true)
                     ->where('status', RecordStatus::Active)
                     ->orderBy('sort_order')
                     ->get(['value', 'suffix', 'title', 'icon'])
+                    ->map(fn (HomeStat $stat): array => [
+                        'value' => $stat->value,
+                        'suffix' => $stat->suffix,
+                        'title' => $stat->title,
+                        'icon' => $stat->icon,
+                    ])
+                    ->values()
                     ->all(),
                 'feature_cards' => HomeFeatureCard::query()
                     ->where('is_visible', true)
                     ->where('status', RecordStatus::Active)
                     ->orderBy('sort_order')
                     ->get(['card_type', 'client_type', 'title', 'description', 'icon'])
+                    ->map(fn (HomeFeatureCard $card): array => [
+                        'card_type' => $card->card_type,
+                        'client_type' => $card->client_type,
+                        'title' => $card->title,
+                        'description' => $card->description,
+                        'icon' => $card->icon,
+                    ])
+                    ->values()
                     ->all(),
                 'workflow_steps' => HomeWorkflowStep::query()
                     ->where('is_visible', true)
                     ->where('status', RecordStatus::Active)
                     ->orderBy('sort_order')
                     ->get(['step_number', 'title', 'description', 'icon'])
+                    ->map(fn (HomeWorkflowStep $step): array => [
+                        'step_number' => $step->step_number,
+                        'title' => $step->title,
+                        'description' => $step->description,
+                        'icon' => $step->icon,
+                    ])
+                    ->values()
                     ->all(),
                 'quick_links' => HomeQuickLink::query()
                     ->where('is_visible', true)
                     ->where('status', RecordStatus::Active)
                     ->orderBy('sort_order')
                     ->get(['title', 'description', 'link_url', 'icon'])
+                    ->map(fn (HomeQuickLink $link): array => [
+                        'title' => $link->title,
+                        'description' => $link->description,
+                        'link_url' => $link->link_url,
+                        'icon' => $link->icon,
+                    ])
+                    ->values()
                     ->all(),
                 'pricing_plans' => HomePricingPlan::query()
                     ->where('is_visible', true)
                     ->where('status', RecordStatus::Active)
                     ->orderBy('sort_order')
                     ->get(['name', 'price', 'period', 'description', 'features', 'cta_text', 'cta_url', 'is_highlighted'])
+                    ->map(fn (HomePricingPlan $plan): array => [
+                        'name' => $plan->name,
+                        'price' => $plan->price,
+                        'period' => $plan->period,
+                        'description' => $plan->description,
+                        'features' => $plan->features ?? [],
+                        'cta_text' => $plan->cta_text,
+                        'cta_url' => $plan->cta_url,
+                        'is_highlighted' => (bool) $plan->is_highlighted,
+                    ])
+                    ->values()
                     ->all(),
                 'testimonials' => Testimonial::query()
                     ->where('status', RecordStatus::Active)
@@ -273,7 +430,8 @@ class SiteConfigService
                 'name' => $product->name,
                 'category' => $product->category?->name,
                 'price' => (float) $product->price,
-                'currency' => $product->currency,
+                'currency' => strtoupper($product->currency ?: 'USD'),
+                'prices' => $this->productPrices($product),
                 'description' => $product->description,
                 'rating' => (float) $product->rating,
                 'badge' => $product->badge,
@@ -336,5 +494,39 @@ class SiteConfigService
         }
 
         return $data;
+    }
+
+    private function usdPenRate(): float
+    {
+        $setting = Setting::query()
+            ->where('group', 'store')
+            ->where('key', 'usd_pen_rate')
+            ->value('value');
+
+        $rate = is_numeric($setting) ? (float) $setting : 3.75;
+
+        return max(0.01, $rate);
+    }
+
+    /**
+     * @return array{USD: float, PEN: float}
+     */
+    private function productPrices(Product $product): array
+    {
+        $rate = $this->usdPenRate();
+        $price = (float) $product->price;
+        $currency = strtoupper($product->currency ?: 'USD');
+
+        if ($currency === 'PEN') {
+            return [
+                'USD' => round($price / $rate, 2),
+                'PEN' => $price,
+            ];
+        }
+
+        return [
+            'USD' => $price,
+            'PEN' => round($price * $rate, 2),
+        ];
     }
 }

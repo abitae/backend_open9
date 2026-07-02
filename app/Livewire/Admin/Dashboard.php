@@ -2,61 +2,117 @@
 
 namespace App\Livewire\Admin;
 
+use App\Enums\ContactStatus;
+use App\Models\AiChatSetting;
 use App\Models\BlogPost;
 use App\Models\Contact;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
+use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Product;
 use App\Models\Project;
+use App\Models\Service;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 use Livewire\Component;
 
 class Dashboard extends Component
 {
     /**
-     * @return array<string, int|string>
+     * @return list<array{label: string, value: int|string, hint?: string}>
      */
-    public function metrics(): array
+    public function siteMetrics(): array
     {
+        $chat = AiChatSetting::query()->first();
+
         return [
-            'Cursos publicados' => Course::query()->where('status', 'published')->count(),
-            'Inscripciones' => CourseEnrollment::query()->count(),
-            'Pagos aprobados' => Payment::query()->where('status', 'approved')->count(),
-            'Ingresos' => 'PEN '.number_format((float) Payment::query()->where('status', 'approved')->sum('amount'), 2),
-            'Contactos nuevos' => Contact::query()->where('status', 'new')->count(),
-            'Proyectos destacados' => Project::query()->where('is_featured', true)->count(),
+            ['label' => 'Contactos nuevos', 'value' => Contact::query()->where('status', ContactStatus::New)->count()],
+            ['label' => 'Proyectos publicados', 'value' => Project::query()->where('status', 'published')->count()],
+            ['label' => 'Proyectos destacados', 'value' => Project::query()->where('is_featured', true)->count()],
+            ['label' => 'Servicios activos', 'value' => Service::query()->where('status', 'published')->count()],
+            ['label' => 'Artículos publicados', 'value' => BlogPost::query()->where('status', 'published')->count()],
+            ['label' => 'Productos en tienda', 'value' => Product::query()->where('status', 'active')->count()],
+            [
+                'label' => 'Chat IA',
+                'value' => $chat?->is_enabled ? 'Activo' : 'Inactivo',
+                'hint' => $chat?->provider ? strtoupper((string) $chat->provider) : 'Sin proveedor',
+            ],
         ];
     }
 
     /**
-     * @return Collection<int, CourseEnrollment>
+     * @return list<array{label: string, value: int|string}>
      */
-    public function latestEnrollments(): Collection
+    public function academyMetrics(): array
     {
-        return CourseEnrollment::query()->latest()->limit(5)->get();
+        return [
+            ['label' => 'Cursos publicados', 'value' => Course::query()->where('status', 'published')->count()],
+            ['label' => 'Inscripciones', 'value' => CourseEnrollment::query()->count()],
+            ['label' => 'Pagos aprobados', 'value' => Payment::query()->where('status', 'approved')->count()],
+            [
+                'label' => 'Ingresos academia',
+                'value' => 'PEN '.number_format((float) Payment::query()->where('status', 'approved')->sum('amount'), 2),
+            ],
+        ];
     }
 
     /**
-     * @return Collection<int, Payment>
+     * @return list<array{label: string, route: string|null, icon: string}>
      */
-    public function pendingPayments(): Collection
+    public function quickLinks(): array
     {
-        return Payment::query()->where('status', 'pending')->latest()->limit(5)->get();
+        $links = [
+            ['label' => 'Identidad y marca', 'route' => 'admin.site-branding.index', 'icon' => 'sparkles', 'permission' => 'site-branding.view'],
+            ['label' => 'Hero — card principal', 'route' => 'admin.home-hero-panel.index', 'icon' => 'presentation-chart-line', 'permission' => 'home-hero-panel.view'],
+            ['label' => 'Encabezados de secciones', 'route' => 'admin.home-section-headers.index', 'icon' => 'bars-3-bottom-left', 'permission' => 'home-section-headers.view'],
+            ['label' => 'Chat IA', 'route' => 'admin.ai-chat.index', 'icon' => 'chat-bubble-left-right', 'permission' => 'ai-chat.view'],
+            ['label' => 'Mensajes de contacto', 'route' => 'admin.contacts.index', 'icon' => 'envelope', 'permission' => 'contacts.view'],
+            ['label' => 'Proyectos', 'route' => 'admin.projects.index', 'icon' => 'folder-git-2', 'permission' => 'projects.view'],
+            ['label' => 'Blog', 'route' => 'admin.blog.index', 'icon' => 'newspaper', 'permission' => 'blog.view'],
+        ];
+
+        return collect($links)
+            ->filter(fn (array $link): bool => auth()->user()?->can($link['permission']) ?? false)
+            ->filter(fn (array $link): bool => $link['route'] !== null && Route::has($link['route']))
+            ->map(fn (array $link): array => [
+                'label' => $link['label'],
+                'route' => $link['route'],
+                'icon' => $link['icon'],
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return Collection<int, Contact>
+     */
+    public function latestContacts(): Collection
+    {
+        return Contact::query()->latest()->limit(5)->get();
     }
 
     /**
      * @return Collection<int, BlogPost>
      */
-    public function popularPosts(): Collection
+    public function latestPosts(): Collection
     {
-        return BlogPost::query()->orderByDesc('views_count')->limit(5)->get();
+        return BlogPost::query()->latest('published_at')->limit(5)->get();
     }
 
     /**
-     * @return array{labels: list<string>, enrollments: list<int>, payments: list<int>, revenue: list<float>, max: float}
+     * @return Collection<int, Order>
+     */
+    public function latestOrders(): Collection
+    {
+        return Order::query()->latest()->limit(5)->get();
+    }
+
+    /**
+     * @return array{labels: list<string>, contacts: list<int>, posts: list<int>, orders: list<int>, max: float}
      */
     public function monthlySeries(): array
     {
@@ -66,40 +122,40 @@ class Dashboard extends Component
         $start = $months->first();
         $end = now()->endOfMonth();
 
-        $enrollments = CourseEnrollment::query()
+        $contacts = Contact::query()
             ->whereBetween('created_at', [$start, $end])
             ->get(['created_at'])
-            ->groupBy(fn (CourseEnrollment $enrollment): string => $enrollment->created_at->format('Y-m'));
+            ->groupBy(fn (Contact $contact): string => $contact->created_at->format('Y-m'));
 
-        $payments = Payment::query()
+        $posts = BlogPost::query()
+            ->whereBetween('published_at', [$start, $end])
+            ->get(['published_at'])
+            ->groupBy(fn (BlogPost $post): string => $post->published_at?->format('Y-m') ?? '');
+
+        $orders = Order::query()
             ->whereBetween('created_at', [$start, $end])
-            ->get(['amount', 'status', 'created_at'])
-            ->groupBy(fn (Payment $payment): string => $payment->created_at->format('Y-m'));
+            ->get(['created_at'])
+            ->groupBy(fn (Order $order): string => $order->created_at->format('Y-m'));
 
         $labels = [];
-        $enrollmentCounts = [];
-        $approvedPaymentCounts = [];
-        $revenue = [];
+        $contactCounts = [];
+        $postCounts = [];
+        $orderCounts = [];
 
         foreach ($months as $month) {
             $key = $month->format('Y-m');
             $labels[] = $month->format('M');
-            $enrollmentCounts[] = $enrollments->get($key, collect())->count();
-            $approved = $payments->get($key, collect())->filter(function (Payment $payment): bool {
-                $status = $payment->getAttribute('status');
-
-                return $status instanceof BackedEnum ? $status->value === 'approved' : $status === 'approved';
-            });
-            $approvedPaymentCounts[] = $approved->count();
-            $revenue[] = (float) $approved->sum('amount');
+            $contactCounts[] = $contacts->get($key, collect())->count();
+            $postCounts[] = $posts->get($key, collect())->count();
+            $orderCounts[] = $orders->get($key, collect())->count();
         }
 
         return [
             'labels' => $labels,
-            'enrollments' => $enrollmentCounts,
-            'payments' => $approvedPaymentCounts,
-            'revenue' => $revenue,
-            'max' => max(1, ...$enrollmentCounts, ...$approvedPaymentCounts, ...$revenue),
+            'contacts' => $contactCounts,
+            'posts' => $postCounts,
+            'orders' => $orderCounts,
+            'max' => max(1, ...$contactCounts, ...$postCounts, ...$orderCounts),
         ];
     }
 

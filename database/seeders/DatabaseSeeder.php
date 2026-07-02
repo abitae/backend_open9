@@ -24,6 +24,8 @@ class DatabaseSeeder extends Seeder
             BlogCategorySeeder::class,
             Open9DemoSeeder::class,
             SiteCmsSeeder::class,
+            BlogContentSeeder::class,
+            StoreCatalogSeeder::class,
         ]);
     }
 }

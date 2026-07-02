@@ -6,6 +6,10 @@ use App\Models\AiChatSetting;
 use App\Models\FooterLink;
 use App\Models\FooterLinkGroup;
 use App\Models\HomeFeatureCard;
+use App\Models\HomeHeroPanelPill;
+use App\Models\HomeHeroPanelSetting;
+use App\Models\HomeHeroPanelStat;
+use App\Models\HomeHeroShowcaseCard;
 use App\Models\HomePricingPlan;
 use App\Models\HomeQuickLink;
 use App\Models\HomeStat;
@@ -28,13 +32,7 @@ class SiteCmsSeeder extends Seeder
         SiteBranding::query()->updateOrCreate(['id' => 1], [
             'site_name' => 'OPEN9',
             'tagline' => 'Tecnología integral para tu empresa',
-            'hero_title' => 'Infraestructura, cloud y software a medida',
-            'hero_subtitle' => 'Hardware para servidores, cloud AWS/Azure/Google y desarrollo web/mobile con equipos dedicados.',
-            'hero_cta_primary_label' => 'Ver servicios',
-            'hero_cta_primary_url' => '/servicios',
-            'hero_cta_secondary_label' => 'Contactar',
-            'hero_cta_secondary_url' => '/contacto',
-            'background_video_url' => 'https://d2v9y0dukr6mq2.cloudfront.net/video/portfolio/clouds.mp4',
+            'background_video_url' => 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4',
             'contact_email' => 'hola@open9.dev',
             'contact_phone' => '+51 999 000 000',
             'website_url' => 'https://open9.dev',
@@ -62,6 +60,79 @@ class SiteCmsSeeder extends Seeder
             ];
             foreach ($stats as $stat) {
                 HomeStat::query()->create($stat + ['status' => 'active', 'is_visible' => true]);
+            }
+        }
+
+        HomeHeroPanelSetting::query()->firstOrCreate(['id' => 1], [
+            'badge_label' => 'Servicios tecnológicos · open9.dev',
+            'headline_pre' => 'Innovando el',
+            'headline_highlight' => 'futuro tech',
+            'headline_subtitle' => 'Hardware, cloud e',
+            'headline_subtitle_highlight' => 'software a medida',
+            'show_site_name_chip' => true,
+            'description' => 'Diseñamos, desplegamos y mantenemos infraestructura en servidores físicos y virtuales, con integración en AWS, Azure y Google Cloud.',
+            'cta_label' => 'Solicitar cotización',
+            'cta_url' => '/contacto',
+            'cta_icon' => 'Download',
+            'quote_kicker' => 'Infraestructura · Cloud · Desarrollo',
+            'quote_primary' => 'Tu partner tecnológico',
+            'quote_secondary' => 'de principio a fin.',
+            'quote_footer' => 'open9.dev',
+        ]);
+
+        if (HomeHeroPanelStat::query()->count() === 0) {
+            $heroPanelStats = [
+                ['value' => '80+', 'suffix' => null, 'label' => 'Proyectos', 'sort_order' => 1],
+                ['value' => '99.9', 'suffix' => '%', 'label' => 'Uptime', 'sort_order' => 2],
+                ['value' => '3', 'suffix' => null, 'label' => 'Clouds', 'sort_order' => 3],
+            ];
+            foreach ($heroPanelStats as $stat) {
+                HomeHeroPanelStat::query()->create($stat + ['status' => 'active', 'is_visible' => true]);
+            }
+        }
+
+        if (HomeHeroPanelPill::query()->count() === 0) {
+            $heroPills = [
+                ['label' => 'AWS · Azure · GCP', 'sort_order' => 1],
+                ['label' => 'Servidores', 'sort_order' => 2],
+                ['label' => 'Software a medida', 'sort_order' => 3],
+            ];
+            foreach ($heroPills as $pill) {
+                HomeHeroPanelPill::query()->create($pill + ['status' => 'active', 'is_visible' => true]);
+            }
+        }
+
+        if (HomeHeroShowcaseCard::query()->count() === 0) {
+            $heroCards = [
+                [
+                    'layout' => 'compact',
+                    'title' => 'Hardware servidores',
+                    'description' => 'Racks físicos y nodos virtuales optimizados para cargas de producción.',
+                    'icon' => 'Server',
+                    'media_type' => 'none',
+                    'sort_order' => 1,
+                ],
+                [
+                    'layout' => 'compact',
+                    'title' => 'Cloud híbrido',
+                    'description' => 'AWS, Azure y Google Cloud con arquitecturas seguras y escalables.',
+                    'icon' => 'Cloud',
+                    'media_type' => 'none',
+                    'sort_order' => 2,
+                ],
+                [
+                    'layout' => 'featured',
+                    'title' => 'Software a medida',
+                    'description' => 'Aplicaciones web, mobile e infraestructura diseñadas para tu negocio.',
+                    'icon' => 'Smartphone',
+                    'media_type' => 'image',
+                    'image_path' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
+                    'sort_order' => 3,
+                ],
+            ];
+
+            foreach ($heroCards as $card) {
+                HomeHeroShowcaseCard::query()->create($card + ['status' => 'active', 'is_visible' => true]);
             }
         }
 
@@ -195,5 +266,7 @@ class SiteCmsSeeder extends Seeder
                 ]);
             }
         }
+
+        $this->call(HomeSectionHeadersSeeder::class);
     }
 }

@@ -37,13 +37,13 @@ window.renderOpen9DashboardCharts = (series) => {
         window.open9Charts[id] = new Chart(canvas, config);
     };
 
-    render('monthly-enrollments-chart', {
+    render('contacts-chart', {
         type: 'bar',
         data: {
             labels: series.labels,
             datasets: [{
-                label: 'Inscripciones',
-                data: series.enrollments,
+                label: 'Contactos',
+                data: series.contacts,
                 backgroundColor: '#18181b',
                 borderRadius: 6,
             }],
@@ -51,13 +51,13 @@ window.renderOpen9DashboardCharts = (series) => {
         options: chartDefaults,
     });
 
-    render('approved-payments-chart', {
+    render('posts-chart', {
         type: 'bar',
         data: {
             labels: series.labels,
             datasets: [{
-                label: 'Pagos aprobados',
-                data: series.payments,
+                label: 'Artículos',
+                data: series.posts,
                 backgroundColor: '#059669',
                 borderRadius: 6,
             }],
@@ -65,13 +65,13 @@ window.renderOpen9DashboardCharts = (series) => {
         options: chartDefaults,
     });
 
-    render('revenue-chart', {
+    render('orders-chart', {
         type: 'line',
         data: {
             labels: series.labels,
             datasets: [{
-                label: 'Ingresos',
-                data: series.revenue,
+                label: 'Pedidos',
+                data: series.orders,
                 borderColor: '#2563eb',
                 backgroundColor: 'rgba(37, 99, 235, 0.12)',
                 fill: true,
@@ -79,17 +79,6 @@ window.renderOpen9DashboardCharts = (series) => {
                 pointRadius: 3,
             }],
         },
-        options: {
-            ...chartDefaults,
-            scales: {
-                ...chartDefaults.scales,
-                y: {
-                    ...chartDefaults.scales.y,
-                    ticks: {
-                        callback: (value) => `S/ ${value}`,
-                    },
-                },
-            },
-        },
+        options: chartDefaults,
     });
 };

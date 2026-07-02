@@ -23,6 +23,8 @@ class SiteBrandingAdmin extends Component
 
     public ?TemporaryUploadedFile $faviconUpload = null;
 
+    public ?TemporaryUploadedFile $backgroundVideoUpload = null;
+
     public function mount(): void
     {
         abort_unless(auth()->user()?->can('site-branding.view'), 403);
@@ -32,9 +34,7 @@ class SiteBrandingAdmin extends Component
         ]);
 
         $this->form = $branding->only([
-            'site_name', 'tagline', 'hero_title', 'hero_subtitle',
-            'hero_cta_primary_label', 'hero_cta_primary_url',
-            'hero_cta_secondary_label', 'hero_cta_secondary_url',
+            'site_name', 'tagline',
             'background_video_url', 'contact_email', 'contact_phone',
             'contact_address', 'website_url', 'footer_description',
             'copyright_text', 'seo_description', 'logo_path', 'logo_dark_path', 'favicon_path',
@@ -46,15 +46,9 @@ class SiteBrandingAdmin extends Component
         abort_unless(auth()->user()?->can('site-branding.update'), 403);
 
         $this->validate([
-            'form.site_name' => ['required', 'string', 'max:255'],
+            'form.site_name' => ['nullable', 'string', 'max:255'],
             'form.tagline' => ['nullable', 'string', 'max:255'],
-            'form.hero_title' => ['nullable', 'string', 'max:255'],
-            'form.hero_subtitle' => ['nullable', 'string'],
-            'form.hero_cta_primary_label' => ['nullable', 'string', 'max:255'],
-            'form.hero_cta_primary_url' => ['nullable', 'string', 'max:500'],
-            'form.hero_cta_secondary_label' => ['nullable', 'string', 'max:255'],
-            'form.hero_cta_secondary_url' => ['nullable', 'string', 'max:500'],
-            'form.background_video_url' => ['nullable', 'url', 'max:500'],
+            'form.background_video_url' => ['nullable', 'string', 'max:500'],
             'form.contact_email' => ['nullable', 'email', 'max:255'],
             'form.contact_phone' => ['nullable', 'string', 'max:255'],
             'form.contact_address' => ['nullable', 'string', 'max:500'],
@@ -62,9 +56,10 @@ class SiteBrandingAdmin extends Component
             'form.footer_description' => ['nullable', 'string'],
             'form.copyright_text' => ['nullable', 'string', 'max:255'],
             'form.seo_description' => ['nullable', 'string'],
-            'logoUpload' => ['nullable', 'image', 'max:4096'],
-            'logoDarkUpload' => ['nullable', 'image', 'max:4096'],
-            'faviconUpload' => ['nullable', 'image', 'max:1024'],
+            'logoUpload' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:4096'],
+            'logoDarkUpload' => ['nullable', 'file', 'mimes:png,jpg,jpeg,webp,svg', 'max:4096'],
+            'faviconUpload' => ['nullable', 'file', 'mimes:ico,png,svg,webp,jpg,jpeg', 'max:2048'],
+            'backgroundVideoUpload' => ['nullable', 'file', 'mimetypes:video/mp4,video/webm,video/quicktime', 'max:102400'],
         ]);
 
         $storage = app(MediaStorageService::class);
@@ -81,12 +76,19 @@ class SiteBrandingAdmin extends Component
             $this->form['favicon_path'] = $storage->store($this->faviconUpload, 'branding/favicon');
         }
 
+        if ($this->backgroundVideoUpload instanceof TemporaryUploadedFile) {
+            $this->form['background_video_url'] = $storage->store($this->backgroundVideoUpload, 'branding/background');
+        }
+
+        $this->form['site_name'] = trim((string) ($this->form['site_name'] ?? ''));
+
         SiteBranding::query()->updateOrCreate(['id' => 1], $this->form);
         app(SiteConfigService::class)->clearCache();
 
         $this->logoUpload = null;
         $this->logoDarkUpload = null;
         $this->faviconUpload = null;
+        $this->backgroundVideoUpload = null;
 
         session()->flash('status', 'Identidad del sitio actualizada.');
     }

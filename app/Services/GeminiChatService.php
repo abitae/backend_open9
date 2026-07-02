@@ -11,9 +11,9 @@ class GeminiChatService
     /**
      * @param  list<array{role: string, text: string}>  $history
      */
-    public function chat(string $message, array $history = []): string
+    public function chat(string $message, array $history = [], ?AiChatSetting $settings = null): string
     {
-        $settings = AiChatSetting::query()->firstOrCreate(['id' => 1], [
+        $settings ??= AiChatSetting::query()->firstOrCreate(['id' => 1], [
             'model' => 'gemini-2.0-flash',
             'welcome_message' => 'Hola, soy el asistente de OPEN9.',
         ]);
@@ -22,11 +22,7 @@ class GeminiChatService
             throw new \RuntimeException('El chat no está habilitado.');
         }
 
-        if ($settings->api_key === null || $settings->api_key === '') {
-            throw new \RuntimeException('La API key de Gemini no está configurada.');
-        }
-
-        $apiKey = Crypt::decryptString($settings->api_key);
+        $apiKey = $this->resolveGeminiApiKey($settings);
         $model = $settings->model ?: 'gemini-2.0-flash';
 
         $contents = [];
@@ -66,5 +62,14 @@ class GeminiChatService
         }
 
         return trim($text);
+    }
+
+    private function resolveGeminiApiKey(AiChatSetting $settings): string
+    {
+        if ($settings->api_key === null || $settings->api_key === '') {
+            throw new \RuntimeException('La API key de Gemini no está configurada.');
+        }
+
+        return Crypt::decryptString($settings->api_key);
     }
 }

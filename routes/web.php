@@ -16,8 +16,11 @@ use App\Livewire\Admin\Enrollments;
 use App\Livewire\Admin\FooterLinkGroups;
 use App\Livewire\Admin\FooterLinks;
 use App\Livewire\Admin\HomeFeatureCards;
+use App\Livewire\Admin\HomeHeroPanelAdmin;
+use App\Livewire\Admin\HomeHeroShowcase;
 use App\Livewire\Admin\HomePricingPlans;
 use App\Livewire\Admin\HomeQuickLinks;
+use App\Livewire\Admin\HomeSectionSettings;
 use App\Livewire\Admin\HomeStats;
 use App\Livewire\Admin\HomeWorkflowSteps;
 use App\Livewire\Admin\Instructors;
@@ -92,7 +95,7 @@ Route::post('/contacto', function (Request $request) {
 })->middleware('throttle:10,1')->name('contact.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', Dashboard::class)->name('dashboard');
+    Route::get('dashboard', fn () => redirect()->route('admin.dashboard'))->name('dashboard');
 
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', Dashboard::class)->middleware('permission:dashboard.view')->name('dashboard');
@@ -124,10 +127,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('footer-links', FooterLinks::class)->middleware('permission:footer-links.view')->name('footer-links.index');
         Route::get('social-links', SocialLinks::class)->middleware('permission:social-links.view')->name('social-links.index');
         Route::get('home-stats', HomeStats::class)->middleware('permission:home-stats.view')->name('home-stats.index');
+        Route::get('home-hero-panel', HomeHeroPanelAdmin::class)->middleware('permission:home-hero-panel.view')->name('home-hero-panel.index');
+        Route::get('home-hero-showcase', HomeHeroShowcase::class)->middleware('permission:home-hero-showcase.view')->name('home-hero-showcase.index');
         Route::get('home-feature-cards', HomeFeatureCards::class)->middleware('permission:home-feature-cards.view')->name('home-feature-cards.index');
         Route::get('home-workflow-steps', HomeWorkflowSteps::class)->middleware('permission:home-workflow-steps.view')->name('home-workflow-steps.index');
         Route::get('home-quick-links', HomeQuickLinks::class)->middleware('permission:home-quick-links.view')->name('home-quick-links.index');
         Route::get('home-pricing-plans', HomePricingPlans::class)->middleware('permission:home-pricing-plans.view')->name('home-pricing-plans.index');
+        Route::get('home-section-headers', HomeSectionSettings::class)->middleware('permission:home-section-headers.view')->name('home-section-headers.index');
         Route::get('legal-pages', LegalPages::class)->middleware('permission:legal-pages.view')->name('legal-pages.index');
         Route::get('ai-chat', AiChatSettings::class)->middleware('permission:ai-chat.view')->name('ai-chat.index');
         Route::get('services', Services::class)->middleware('permission:services.view')->name('services.index');

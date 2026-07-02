@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\StorageDriver;
 use App\Models\StorageSetting;
 use Google\Cloud\Storage\StorageClient;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
@@ -20,12 +21,26 @@ class StorageConfigService
 
     public function settings(): StorageSetting
     {
-        return Cache::remember(self::CACHE_KEY, 300, function (): StorageSetting {
-            return StorageSetting::query()->firstOrCreate(
-                ['id' => 1],
-                ['driver' => StorageDriver::Local],
-            );
-        });
+        $cached = Cache::get(self::CACHE_KEY);
+
+        if (is_int($cached)) {
+            $settings = StorageSetting::query()->find($cached);
+
+            if ($settings instanceof StorageSetting) {
+                return $settings;
+            }
+        } elseif ($cached !== null) {
+            Cache::forget(self::CACHE_KEY);
+        }
+
+        $settings = StorageSetting::query()->firstOrCreate(
+            ['id' => 1],
+            ['driver' => StorageDriver::Local],
+        );
+
+        Cache::put(self::CACHE_KEY, $settings->getKey(), 300);
+
+        return $settings;
     }
 
     public function clearCache(): void
@@ -114,7 +129,7 @@ class StorageConfigService
             $bucket = $client->bucket($config['bucket']);
             $adapter = new GoogleCloudStorageAdapter($bucket, $config['path_prefix'] ?? '');
 
-            return new \Illuminate\Filesystem\FilesystemAdapter(
+            return new FilesystemAdapter(
                 new Filesystem($adapter, $config),
                 $adapter,
                 $config,
