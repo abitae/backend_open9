@@ -72,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
             \App\Models\HomeSectionSetting::class,
             \App\Models\LegalPage::class,
             \App\Models\AiChatSetting::class,
+            \App\Models\Setting::class,
         ];
 
         foreach ($models as $model) {
