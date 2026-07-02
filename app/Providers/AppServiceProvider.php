@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use App\Services\StorageConfigService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        app(StorageConfigService::class)->registerGcsDriver();
     }
 
     /**
@@ -46,5 +48,29 @@ class AppServiceProvider extends ServiceProvider
                 ->uncompromised()
             : null,
         );
+
+        $this->registerSiteCacheClearing();
+    }
+
+    protected function registerSiteCacheClearing(): void
+    {
+        $models = [
+            \App\Models\SiteBranding::class,
+            \App\Models\FooterLinkGroup::class,
+            \App\Models\FooterLink::class,
+            \App\Models\SocialLink::class,
+            \App\Models\HomeStat::class,
+            \App\Models\HomeFeatureCard::class,
+            \App\Models\HomeWorkflowStep::class,
+            \App\Models\HomeQuickLink::class,
+            \App\Models\HomePricingPlan::class,
+            \App\Models\LegalPage::class,
+            \App\Models\AiChatSetting::class,
+        ];
+
+        foreach ($models as $model) {
+            $model::saved(fn () => app(\App\Services\SiteConfigService::class)->clearCache());
+            $model::deleted(fn () => app(\App\Services\SiteConfigService::class)->clearCache());
+        }
     }
 }
