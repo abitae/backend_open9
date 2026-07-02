@@ -15,16 +15,16 @@ use App\Models\HomeQuickLink;
 use App\Models\HomeStat;
 use App\Models\HomeWorkflowStep;
 use App\Models\LegalPage;
-use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\Service;
 use App\Models\SiteBranding;
 use App\Models\SocialLink;
 use App\Models\StorageSetting;
+use Database\Seeders\Concerns\SeedsReferenceImages;
 use Illuminate\Database\Seeder;
 
 class SiteCmsSeeder extends Seeder
 {
+    use SeedsReferenceImages;
+
     public function run(): void
     {
         StorageSetting::query()->firstOrCreate(['id' => 1], ['driver' => 'local']);
@@ -102,38 +102,41 @@ class SiteCmsSeeder extends Seeder
             }
         }
 
-        if (HomeHeroShowcaseCard::query()->count() === 0) {
-            $heroCards = [
-                [
-                    'layout' => 'compact',
-                    'title' => 'Hardware servidores',
-                    'description' => 'Racks físicos y nodos virtuales optimizados para cargas de producción.',
-                    'icon' => 'Server',
-                    'media_type' => 'none',
-                    'sort_order' => 1,
-                ],
-                [
-                    'layout' => 'compact',
-                    'title' => 'Cloud híbrido',
-                    'description' => 'AWS, Azure y Google Cloud con arquitecturas seguras y escalables.',
-                    'icon' => 'Cloud',
-                    'media_type' => 'none',
-                    'sort_order' => 2,
-                ],
-                [
-                    'layout' => 'featured',
-                    'title' => 'Software a medida',
-                    'description' => 'Aplicaciones web, mobile e infraestructura diseñadas para tu negocio.',
-                    'icon' => 'Smartphone',
-                    'media_type' => 'image',
-                    'image_path' => 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&q=80',
-                    'sort_order' => 3,
-                ],
-            ];
+        $heroCards = [
+            [
+                'title' => 'Hardware servidores',
+                'layout' => 'compact',
+                'description' => 'Racks físicos y nodos virtuales optimizados para cargas de producción.',
+                'icon' => 'Server',
+                'media_type' => 'image',
+                'image_path' => $this->referenceImage('server-rack', 600, 400),
+                'sort_order' => 1,
+            ],
+            [
+                'title' => 'Cloud híbrido',
+                'layout' => 'compact',
+                'description' => 'AWS, Azure y Google Cloud con arquitecturas seguras y escalables.',
+                'icon' => 'Cloud',
+                'media_type' => 'image',
+                'image_path' => $this->referenceImage('cloud-abstract', 600, 400),
+                'sort_order' => 2,
+            ],
+            [
+                'title' => 'Software a medida',
+                'layout' => 'featured',
+                'description' => 'Aplicaciones web, mobile e infraestructura diseñadas para tu negocio.',
+                'icon' => 'Smartphone',
+                'media_type' => 'image',
+                'image_path' => $this->referenceImage('coding-laptop', 800, 500),
+                'sort_order' => 3,
+            ],
+        ];
 
-            foreach ($heroCards as $card) {
-                HomeHeroShowcaseCard::query()->create($card + ['status' => 'active', 'is_visible' => true]);
-            }
+        foreach ($heroCards as $card) {
+            HomeHeroShowcaseCard::query()->updateOrCreate(
+                ['sort_order' => $card['sort_order']],
+                $card + ['status' => 'active', 'is_visible' => true],
+            );
         }
 
         if (HomeFeatureCard::query()->count() === 0) {
@@ -236,35 +239,6 @@ class SiteCmsSeeder extends Seeder
                     ['type' => 'paragraph', 'content' => 'Contenido administrable desde el panel de OPEN9.'],
                 ],
             ]);
-        }
-
-        if (Service::query()->count() === 0) {
-            $services = [
-                ['title' => 'Consultoría TI', 'slug' => 'consultoria-ti', 'description' => 'Auditoría y roadmap tecnológico.', 'icon' => 'Lightbulb', 'price_label' => 'Desde $2,500', 'features' => ['Diagnóstico', 'Roadmap', 'Workshops']],
-                ['title' => 'Cloud & DevOps', 'slug' => 'cloud-devops', 'description' => 'AWS, Azure y Google Cloud.', 'icon' => 'Cloud', 'price_label' => 'Desde $4,500', 'features' => ['Migración', 'CI/CD', 'Monitoreo']],
-                ['title' => 'Desarrollo Web', 'slug' => 'desarrollo-web', 'description' => 'Aplicaciones web a medida.', 'icon' => 'Globe', 'price_label' => 'Desde $5,500', 'features' => ['React/Laravel', 'APIs', 'Integraciones']],
-            ];
-            foreach ($services as $i => $service) {
-                Service::query()->create($service + ['sort_order' => $i + 1, 'status' => 'published']);
-            }
-        }
-
-        if (Product::query()->count() === 0) {
-            $category = ProductCategory::query()->firstOrCreate(
-                ['slug' => 'hardware'],
-                ['name' => 'Hardware', 'status' => 'active'],
-            );
-            $products = [
-                ['name' => 'Servidor Rack 2U', 'slug' => 'servidor-rack-2u', 'price' => 4500, 'description' => 'Servidor empresarial de alto rendimiento.', 'badge' => 'Nuevo', 'rating' => 4.8, 'stock' => 10],
-                ['name' => 'Licencia Cloud Pro', 'slug' => 'licencia-cloud-pro', 'price' => 299, 'description' => 'Paquete de servicios cloud gestionados.', 'rating' => 4.5, 'stock' => 100],
-            ];
-            foreach ($products as $i => $product) {
-                Product::query()->create($product + [
-                    'product_category_id' => $category->id,
-                    'sort_order' => $i + 1,
-                    'status' => 'published',
-                ]);
-            }
         }
 
         $this->call(HomeSectionHeadersSeeder::class);

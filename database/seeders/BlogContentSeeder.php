@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
-use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\Concerns\SeedsReferenceImages;
 use Illuminate\Database\Seeder;
@@ -25,14 +24,12 @@ class BlogContentSeeder extends Seeder
         $defaultCategory = $categories->first();
 
         $this->seedTags();
-        $this->enrichExistingPosts($editor, $categories, $defaultCategory);
-        $this->seedAdditionalPosts($editor, $categories, $defaultCategory);
-        $this->enrichProjects();
+        $this->seedPosts($editor, $categories, $defaultCategory);
     }
 
     private function seedTags(): void
     {
-        foreach (['AWS', 'Azure', 'Docker', 'Kubernetes', 'React', 'Seguridad', 'IA', 'PostgreSQL', 'DevOps', 'Frontend', 'Cloud'] as $name) {
+        foreach (['Laravel', 'Livewire', 'AWS', 'Azure', 'Docker', 'Kubernetes', 'React', 'Seguridad', 'IA', 'PostgreSQL', 'DevOps', 'Frontend', 'Cloud', 'Hardware'] as $name) {
             BlogTag::query()->updateOrCreate(
                 ['slug' => Str::slug($name)],
                 ['name' => $name],
@@ -43,111 +40,204 @@ class BlogContentSeeder extends Seeder
     /**
      * @param  Collection<string, BlogCategory>  $categories
      */
-    private function enrichExistingPosts(User $editor, $categories, BlogCategory $defaultCategory): void
-    {
-        $existing = [
-            'como-construir-dashboards-administrativos-compactos' => ['category' => 'laravel', 'seed' => 'open9-blog-dashboard', 'tags' => ['Laravel', 'Livewire']],
-            'buenas-practicas-con-livewire-y-fluxui' => ['category' => 'frontend', 'seed' => 'open9-blog-livewire', 'tags' => ['Livewire', 'React']],
-            'postgresql-para-plataformas-educativas' => ['category' => 'devops', 'seed' => 'open9-blog-postgres', 'tags' => ['PostgreSQL', 'Cloud']],
-            'automatizacion-de-pagos-y-certificados' => ['category' => 'laravel', 'seed' => 'open9-blog-payments', 'tags' => ['Laravel', 'Seguridad']],
-            'arquitectura-modular-en-laravel' => ['category' => 'laravel', 'seed' => 'open9-blog-architecture', 'tags' => ['Laravel', 'Docker']],
-        ];
-
-        foreach ($existing as $slug => $meta) {
-            $post = BlogPost::query()->where('slug', $slug)->first();
-            if ($post === null) {
-                continue;
-            }
-
-            $category = $categories->get($meta['category']) ?? $defaultCategory;
-
-            $post->update([
-                'blog_category_id' => $category->id,
-                'main_image' => $this->referenceImage($meta['seed']),
-                'excerpt' => $post->excerpt ?: 'Artículo demo del blog OPEN9 con enfoque práctico para equipos tecnológicos.',
-                'content' => $this->paragraphs(
-                    'En OPEN9 aplicamos este enfoque en proyectos reales de infraestructura y software.',
-                    'La clave está en combinar buenas prácticas de arquitectura con entregas iterativas.',
-                    'Compartimos lecciones aprendidas en despliegues cloud y plataformas administrativas.',
-                ),
-            ]);
-
-            $tagIds = BlogTag::query()->whereIn('name', $meta['tags'])->pluck('id');
-            if ($tagIds->isNotEmpty()) {
-                $post->tags()->syncWithoutDetaching($tagIds->all());
-            }
-        }
-    }
-
-    /**
-     * @param  Collection<string, BlogCategory>  $categories
-     */
-    private function seedAdditionalPosts(User $editor, $categories, BlogCategory $defaultCategory): void
+    private function seedPosts(User $editor, $categories, BlogCategory $defaultCategory): void
     {
         $posts = [
             [
+                'title' => 'Cómo construir dashboards administrativos compactos',
+                'category' => 'desarrollo',
+                'image' => 'blog-laravel',
+                'tags' => ['Laravel', 'Livewire', 'Frontend'],
+                'featured' => true,
+                'weeks_ago' => 2,
+                'excerpt' => 'Patrones de diseño para paneles administrativos densos en información sin sacrificar usabilidad.',
+                'content' => $this->paragraphs(
+                    'Los dashboards administrativos modernos deben mostrar KPIs, tablas y acciones rápidas en un solo viewport. En OPEN9 usamos Livewire con componentes atómicos y lazy loading para mantener tiempos de respuesta bajo 200 ms.',
+                    'Recomendamos agrupar métricas por contexto (ventas, operaciones, soporte) y usar colores semánticos consistentes. Evite más de 6 widgets principales por pantalla.',
+                    'La clave está en combinar server-side rendering con actualizaciones parciales: el usuario percibe una SPA sin la complejidad de un frontend separado.',
+                ),
+            ],
+            [
+                'title' => 'Buenas prácticas con Livewire y FluxUI',
+                'category' => 'desarrollo',
+                'image' => 'blog-livewire',
+                'tags' => ['Livewire', 'Laravel', 'Frontend'],
+                'featured' => true,
+                'weeks_ago' => 3,
+                'excerpt' => 'Componentes reutilizables, validación en tiempo real y accesibilidad en backoffice Laravel.',
+                'content' => $this->paragraphs(
+                    'FluxUI ofrece primitivos accesibles que encajan naturalmente con Livewire 3. Separe la lógica de negocio en actions o services y deje los componentes enfocados en presentación.',
+                    'Use wire:model.live.debounce para búsquedas y filtros; para formularios largos prefiera wire:model.blur para reducir round-trips.',
+                    'En proyectos OPEN9 documentamos cada componente custom en Storybook interno para acelerar la incorporación de nuevos desarrolladores.',
+                ),
+            ],
+            [
+                'title' => 'PostgreSQL para plataformas educativas',
+                'category' => 'desarrollo',
+                'image' => 'blog-postgres',
+                'tags' => ['PostgreSQL', 'Laravel', 'Cloud'],
+                'featured' => false,
+                'weeks_ago' => 4,
+                'excerpt' => 'Índices, particionado y réplicas de lectura para LMS con alto volumen de inscripciones.',
+                'content' => $this->paragraphs(
+                    'Las plataformas educativas concentran picos de carga en fechas de matrícula. PostgreSQL 16 con índices parciales en enrollments(status) reduce consultas de listado un 60%.',
+                    'Para reportes históricos implementamos réplicas de lectura y materialized views refrescadas cada hora.',
+                    'JSONB es útil para metadatos de cursos variables, pero no reemplace columnas tipadas para campos que filtra frecuentemente.',
+                ),
+            ],
+            [
+                'title' => 'Automatización de pagos y certificados',
+                'category' => 'desarrollo',
+                'image' => 'blog-payments',
+                'tags' => ['Laravel', 'Seguridad', 'DevOps'],
+                'featured' => false,
+                'weeks_ago' => 5,
+                'excerpt' => 'Flujos de verificación de vouchers, emisión de certificados PDF y notificaciones automáticas.',
+                'content' => $this->paragraphs(
+                    'Automatizar pagos manuales (Yape, Plin, transferencia) requiere colas resilientes y estados explícitos: pending, under_review, approved, rejected.',
+                    'Los certificados se generan solo tras confirmar enrollment y pago; usamos jobs idempotentes con unique constraints para evitar duplicados.',
+                    'Cada certificado incluye código QR de verificación pública y hash SHA-256 del PDF almacenado en S3.',
+                ),
+            ],
+            [
+                'title' => 'Arquitectura modular en Laravel',
+                'category' => 'desarrollo',
+                'image' => 'blog-architecture',
+                'tags' => ['Laravel', 'Docker', 'DevOps'],
+                'featured' => false,
+                'weeks_ago' => 6,
+                'excerpt' => 'Bounded contexts, service providers y contratos para escalar equipos sin acoplamiento.',
+                'content' => $this->paragraphs(
+                    'Organizamos código por dominio (Academia, Pagos, CMS) con namespaces y service providers dedicados. Las dependencias cruzadas pasan por interfaces en app/Contracts.',
+                    'Events y listeners desacoplan efectos secundarios: un pago aprobado dispara enrollment confirmado, email y auditoría sin orquestación manual.',
+                    'Esta estructura nos permitió extraer el módulo de tienda a un package interno reutilizable en tres clientes.',
+                ),
+            ],
+            [
                 'title' => 'Migración a AWS: lecciones de un proyecto real',
-                'category' => 'devops',
-                'seed' => 'open9-blog-aws',
+                'category' => 'cloud',
+                'image' => 'blog-aws',
                 'tags' => ['AWS', 'Cloud', 'Docker'],
                 'featured' => true,
                 'weeks_ago' => 1,
+                'excerpt' => 'Assessment, piloto y cutover: cómo migramos 12 servicios on-premise sin downtime crítico.',
+                'content' => $this->paragraphs(
+                    'La migración de RetailMax comenzó con un mapa de dependencias y clasificación por criticidad. Servicios stateless fueron los primeros en ECS Fargate.',
+                    'RDS Multi-AZ y backups automatizados reemplazaron el cluster PostgreSQL on-premise. CloudWatch alarms cubren CPU, conexiones y latencia p99.',
+                    'El ahorro de costos del 28% se logró con Reserved Instances y rightsizing tras 60 días de métricas reales.',
+                ),
             ],
             [
                 'title' => 'React 19 y Vite: stack moderno para el frontend OPEN9',
-                'category' => 'frontend',
-                'seed' => 'open9-blog-react',
+                'category' => 'desarrollo',
+                'image' => 'blog-react',
                 'tags' => ['React', 'Frontend'],
                 'featured' => true,
-                'weeks_ago' => 2,
+                'weeks_ago' => 7,
+                'excerpt' => 'Server components no aplican aquí, pero React 19 simplifica formularios y suspense en nuestra SPA.',
+                'content' => $this->paragraphs(
+                    'El sitio público OPEN9 usa React 19 con Vite 6, TypeScript estricto y Tailwind v4. Fetch de configuración CMS en un provider raíz evita prop drilling.',
+                    'Lazy loading de rutas y imágenes con loading="lazy" mantienen LCP bajo 2.5 s en 4G.',
+                    'Integramos animaciones con Framer Motion solo en hero y transiciones de página para no penalizar dispositivos modestos.',
+                ),
             ],
             [
                 'title' => 'Kubernetes en producción: checklist para equipos pequeños',
                 'category' => 'devops',
-                'seed' => 'open9-blog-k8s',
+                'image' => 'blog-k8s',
                 'tags' => ['Kubernetes', 'DevOps', 'Azure'],
                 'featured' => false,
-                'weeks_ago' => 3,
+                'weeks_ago' => 8,
+                'excerpt' => 'Lo mínimo viable antes de exponer workloads a tráfico real: recursos, probes y secrets.',
+                'content' => $this->paragraphs(
+                    'Antes de producción: define requests/limits, liveness/readiness probes, NetworkPolicies y backup de etcd o managed control plane.',
+                    'Usa Helm o Kustomize desde el día uno; evita kubectl apply de YAML suelto en más de dos entornos.',
+                    'Para equipos de 3-5 personas, EKS o AKS managed reduce la carga operativa frente a clusters self-hosted.',
+                ),
             ],
             [
                 'title' => 'IA generativa en soporte técnico: casos de uso',
                 'category' => 'carrera-tech',
-                'seed' => 'open9-blog-ai',
-                'tags' => ['IA', 'Carrera Tech'],
+                'image' => 'blog-ai',
+                'tags' => ['IA', 'Cloud'],
                 'featured' => false,
-                'weeks_ago' => 4,
+                'weeks_ago' => 9,
+                'excerpt' => 'Clasificación de tickets, borradores de respuesta y base de conocimiento asistida por embeddings.',
+                'content' => $this->paragraphs(
+                    'Implementamos un asistente interno que sugiere respuestas basadas en tickets resueltos y documentación Confluence indexada con embeddings.',
+                    'La clasificación automática reduce un 35% el tiempo de triage en mesa L1. Siempre hay revisión humana antes de enviar al cliente.',
+                    'Cuidado con datos sensibles: anonimizamos logs y usamos modelos en región con DPA firmado.',
+                ),
             ],
             [
                 'title' => 'Seguridad en APIs Laravel: autenticación y rate limiting',
-                'category' => 'laravel',
-                'seed' => 'open9-blog-security',
+                'category' => 'seguridad',
+                'image' => 'blog-security',
                 'tags' => ['Laravel', 'Seguridad'],
                 'featured' => false,
-                'weeks_ago' => 5,
+                'weeks_ago' => 10,
+                'excerpt' => 'Sanctum, políticas de autorización, throttling y validación estricta en endpoints públicos.',
+                'content' => $this->paragraphs(
+                    'Toda API pública de OPEN9 usa Sanctum con tokens de corta duración y scopes por recurso. Rate limiting por IP y por token previene abuso.',
+                    'Form Requests centralizan validación; nunca confíe solo en validación frontend. Registre intentos fallidos para detección de fuerza bruta.',
+                    'Headers de seguridad (CSP, HSTS, X-Frame-Options) se configuran en middleware y se verifican en CI con securityheaders.com.',
+                ),
             ],
             [
                 'title' => 'De monolito a microservicios sin perder el control',
                 'category' => 'devops',
-                'seed' => 'open9-blog-microservices',
+                'image' => 'blog-microservices',
                 'tags' => ['Docker', 'Cloud', 'PostgreSQL'],
                 'featured' => false,
-                'weeks_ago' => 6,
+                'weeks_ago' => 11,
+                'excerpt' => 'Strangler fig pattern: extraer bounded contexts cuando el dolor supera el beneficio del monolito.',
+                'content' => $this->paragraphs(
+                    'No microservicios por moda. Extraiga primero el dominio con mayor fricción de despliegue o escalado independiente.',
+                    'Mantenga una base de datos por servicio solo cuando el equipo pueda operar transacciones distribuidas o sagas.',
+                    'API Gateway + service mesh añaden complejidad; para 2-3 servicios, un ALB con rutas por path suele bastar.',
+                ),
             ],
             [
                 'title' => 'Cómo preparar tu carrera tech en 2026',
                 'category' => 'carrera-tech',
-                'seed' => 'open9-blog-career',
-                'tags' => ['Carrera Tech', 'IA'],
+                'image' => 'blog-career',
+                'tags' => ['IA', 'Cloud', 'DevOps'],
                 'featured' => false,
-                'weeks_ago' => 7,
+                'weeks_ago' => 12,
+                'excerpt' => 'Cloud, seguridad e IA aplicada: las tres palancas que más valoran las empresas peruanas.',
+                'content' => $this->paragraphs(
+                    'La demanda crece en perfiles full-stack con experiencia cloud y nociones de seguridad. Certificaciones AWS/Azure ayudan, pero proyectos reales pesan más en entrevistas.',
+                    'Aprenda a documentar decisiones técnicas y a comunicar trade-offs a negocio. Soft skills diferencian seniors de mid-level.',
+                    'OPEN9 Academy ofrece rutas prácticas en Laravel, cloud y DevOps con proyectos que puedes mostrar en portafolio.',
+                ),
             ],
             [
                 'title' => 'Monitoreo con Grafana y Prometheus en cloud híbrido',
                 'category' => 'devops',
-                'seed' => 'open9-blog-monitoring',
+                'image' => 'blog-monitoring',
                 'tags' => ['AWS', 'Azure', 'DevOps'],
                 'featured' => false,
-                'weeks_ago' => 8,
+                'weeks_ago' => 13,
+                'excerpt' => 'Métricas unificadas desde on-premise y multi-cloud en un solo paneo de observabilidad.',
+                'content' => $this->paragraphs(
+                    'Desplegamos Prometheus agents en cada sitio y centralizamos en Grafana Cloud con remote write. Alertas en PagerDuty con runbooks enlazados.',
+                    'SLIs definidos por servicio: disponibilidad, latencia p95 y tasa de error. SLO de 99.9% con presupuesto de error mensual visible al equipo.',
+                    'Logs estructurados en JSON facilitan correlación trace-id entre Laravel, nginx y workers de cola.',
+                ),
+            ],
+            [
+                'title' => 'Servidores rack: guía de dimensionamiento 2026',
+                'category' => 'hardware',
+                'image' => 'server-rack',
+                'tags' => ['Hardware', 'Cloud'],
+                'featured' => false,
+                'weeks_ago' => 14,
+                'excerpt' => 'CPU, RAM, almacenamiento y redundancia para cargas de virtualización y bases de datos.',
+                'content' => $this->paragraphs(
+                    'Para virtualización ligera (10-20 VMs), un servidor 2U dual-socket con 256 GB RAM y almacenamiento híbrido SSD/NVMe cubre la mayoría de PYMEs.',
+                    'Redundancia de fuentes y RAID 10 en datos críticos no son opcionales en producción. Planifique UPS online con autonomía mínima de 15 minutos.',
+                    'OPEN9 asesora en TCO comparando on-premise vs cloud reservado para cargas predecibles de 3+ años.',
+                ),
             ],
         ];
 
@@ -161,24 +251,20 @@ class BlogContentSeeder extends Seeder
                     'user_id' => $editor->id,
                     'blog_category_id' => $category->id,
                     'title' => $data['title'],
-                    'excerpt' => 'Guía práctica del equipo OPEN9 sobre '.$category->name.'.',
-                    'content' => $this->paragraphs(
-                        'Este artículo resume experiencias reales de proyectos de infraestructura y software.',
-                        'Incluye recomendaciones aplicables a equipos que escalan servicios en la nube.',
-                        'OPEN9 acompaña a empresas en hardware, cloud multi-provider y desarrollo a medida.',
-                    ),
-                    'main_image' => $this->referenceImage($data['seed']),
+                    'excerpt' => $data['excerpt'],
+                    'content' => $data['content'],
+                    'main_image' => $this->referenceImage($data['image'], 1200, 675),
                     'gallery' => [
-                        $this->referenceImage($data['seed'].'-a', 600, 400),
-                        $this->referenceImage($data['seed'].'-b', 600, 400),
+                        $this->referenceImage($data['image'], 800, 500),
+                        $this->referenceImage('team-dev', 800, 500),
                     ],
                     'status' => 'published',
                     'is_featured' => $data['featured'],
-                    'views_count' => 320 + ($index * 45),
-                    'reading_time' => 5 + ($index % 4),
-                    'seo_title' => $data['title'],
-                    'seo_description' => 'Artículo OPEN9 sobre tecnología, cloud y mejores prácticas.',
-                    'seo_keywords' => 'open9, cloud, tecnologia',
+                    'views_count' => 420 + ($index * 38),
+                    'reading_time' => 5 + ($index % 5),
+                    'seo_title' => $data['title'].' | Blog OPEN9',
+                    'seo_description' => $data['excerpt'],
+                    'seo_keywords' => 'open9, '.Str::slug($category->name, ', '),
                     'published_at' => now()->subWeeks($data['weeks_ago']),
                 ],
             );
@@ -188,33 +274,10 @@ class BlogContentSeeder extends Seeder
                 $post->tags()->sync($tagIds->all());
             }
         }
-    }
 
-    private function enrichProjects(): void
-    {
-        $projects = [
-            'erp-academico-open9' => 'open9-project-erp',
-            'ecommerce-b2b-laravel' => 'open9-project-ecommerce',
-            'portal-de-analitica-cloud' => 'open9-project-analytics',
-            'automatizacion-de-ventas' => 'open9-project-sales',
-        ];
-
-        foreach ($projects as $slug => $seed) {
-            Project::query()->where('slug', $slug)->update([
-                'main_image' => $this->referenceImage($seed, 1200, 675),
-                'gallery' => [
-                    $this->referenceImage($seed.'-1', 800, 500),
-                    $this->referenceImage($seed.'-2', 800, 500),
-                ],
-            ]);
-        }
-    }
-
-    /**
-     * @param  string  ...$paragraphs
-     */
-    private function paragraphs(...$paragraphs): string
-    {
-        return implode("\n\n", $paragraphs);
+        $validSlugs = collect($posts)->map(fn (array $data): string => Str::slug($data['title']))->all();
+        BlogPost::query()
+            ->whereNotIn('slug', $validSlugs)
+            ->update(['status' => 'draft', 'is_featured' => false]);
     }
 }

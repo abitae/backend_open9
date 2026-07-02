@@ -3,9 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\AuditLog;
-use App\Models\BlogCategory;
-use App\Models\BlogPost;
-use App\Models\BlogTag;
 use App\Models\Certificate;
 use App\Models\Contact;
 use App\Models\Course;
@@ -17,8 +14,6 @@ use App\Models\Instructor;
 use App\Models\MediaFile;
 use App\Models\NewsletterSubscriber;
 use App\Models\Payment;
-use App\Models\Project;
-use App\Models\ProjectCategory;
 use App\Models\Testimonial;
 use App\Models\User;
 use App\Models\UserProfile;
@@ -28,16 +23,18 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+use Database\Seeders\Concerns\SeedsReferenceImages;
+
 class Open9DemoSeeder extends Seeder
 {
+    use SeedsReferenceImages;
+
     public function run(): void
     {
         $codes = app(UniqueCodeService::class);
 
         $users = $this->seedUsers();
         $instructors = $this->seedInstructors($users);
-        $this->seedProjects();
-        $posts = $this->seedBlog($users['editor']);
         $courses = $this->seedCourses($instructors);
         $enrollments = $this->seedEnrollments($courses, $users['student'], $codes);
 
@@ -48,8 +45,6 @@ class Open9DemoSeeder extends Seeder
         $this->seedNewsletter();
         $this->seedMedia($users['admin']);
         $this->seedAuditLogs($users['admin'], $courses->first());
-
-        $posts->each(fn (BlogPost $post): array => $post->tags()->sync(BlogTag::query()->inRandomOrder()->limit(2)->pluck('id')->all()));
     }
 
     /**
@@ -85,8 +80,8 @@ class Open9DemoSeeder extends Seeder
                     'document_number' => fake()->unique()->numerify('########'),
                     'city' => 'Lima',
                     'country' => 'Peru',
-                    'bio' => 'Perfil demo para operaciones Open9.',
-                    'profession' => 'Tecnologia',
+                    'bio' => 'Equipo OPEN9 — infraestructura, cloud y desarrollo de software.',
+                    'profession' => 'Tecnología',
                     'company' => 'Open9',
                     'social_links' => ['linkedin' => 'https://linkedin.com/company/open9'],
                 ]
@@ -134,80 +129,6 @@ class Open9DemoSeeder extends Seeder
     }
 
     /**
-     * @return Collection<int, Project>
-     */
-    private function seedProjects()
-    {
-        $category = ProjectCategory::query()->firstOrFail();
-
-        return collect([
-            ['title' => 'ERP Academico Open9', 'client_name' => 'Open9 Labs', 'is_featured' => true],
-            ['title' => 'Ecommerce B2B Laravel', 'client_name' => 'Andes Tech', 'is_featured' => true],
-            ['title' => 'Portal de Analitica Cloud', 'client_name' => 'Data Norte', 'is_featured' => false],
-            ['title' => 'Automatizacion de Ventas', 'client_name' => 'Ventas Pro', 'is_featured' => false],
-        ])->map(fn (array $data, int $index): Project => Project::query()->updateOrCreate(
-            ['slug' => Str::slug($data['title'])],
-            [
-                'project_category_id' => $category->id,
-                'title' => $data['title'],
-                'short_description' => 'Proyecto demo de portafolio Open9.',
-                'description' => 'Caso de estudio con arquitectura Laravel, Livewire y servicios cloud.',
-                'client_name' => $data['client_name'],
-                'technology_stack' => ['Laravel', 'Livewire', 'PostgreSQL', 'Tailwind CSS'],
-                'gallery' => [],
-                'project_url' => 'https://open9.dev/proyectos/'.Str::slug($data['title']),
-                'github_url' => 'https://github.com/open9/demo',
-                'start_date' => now()->subMonths(8 - $index),
-                'end_date' => now()->subMonths(6 - $index),
-                'status' => 'published',
-                'is_featured' => $data['is_featured'],
-                'views_count' => 120 + ($index * 35),
-                'seo_title' => $data['title'],
-                'seo_description' => 'Proyecto destacado Open9.',
-                'seo_keywords' => 'laravel, tecnologia, open9',
-                'published_at' => now()->subMonths(5 - $index),
-            ]
-        ));
-    }
-
-    /**
-     * @return Collection<int, BlogPost>
-     */
-    private function seedBlog(User $editor)
-    {
-        $category = BlogCategory::query()->firstOrFail();
-
-        collect(['Laravel', 'Livewire', 'Cloud', 'Data', 'Carrera Tech'])->each(
-            fn (string $name): BlogTag => BlogTag::query()->updateOrCreate(['slug' => Str::slug($name)], ['name' => $name])
-        );
-
-        return collect([
-            'Como construir dashboards administrativos compactos',
-            'Buenas practicas con Livewire y FluxUI',
-            'PostgreSQL para plataformas educativas',
-            'Automatizacion de pagos y certificados',
-            'Arquitectura modular en Laravel',
-        ])->map(fn (string $title, int $index): BlogPost => BlogPost::query()->updateOrCreate(
-            ['slug' => Str::slug($title)],
-            [
-                'user_id' => $editor->id,
-                'blog_category_id' => $category->id,
-                'title' => $title,
-                'excerpt' => 'Articulo demo para el blog Open9.',
-                'content' => 'Contenido demo del articulo con enfoque practico para equipos tecnologicos.',
-                'status' => $index === 4 ? 'draft' : 'published',
-                'is_featured' => $index < 2,
-                'views_count' => 500 - ($index * 70),
-                'reading_time' => 6 + $index,
-                'seo_title' => $title,
-                'seo_description' => 'Articulo Open9 sobre tecnologia y educacion.',
-                'seo_keywords' => 'open9, laravel, cursos',
-                'published_at' => $index === 4 ? null : now()->subWeeks($index + 1),
-            ]
-        ));
-    }
-
-    /**
      * @param  Collection<int, Instructor>  $instructors
      * @return Collection<int, Course>
      */
@@ -243,7 +164,7 @@ class Open9DemoSeeder extends Seeder
                     'currency' => 'PEN',
                     'capacity' => 30,
                     'enrolled_count' => 4 + $index,
-                    'image' => 'courses/'.Str::slug($data['title']).'/cover.jpg',
+                    'image' => $this->referenceImage(['coding-laptop', 'react-code', 'blog-postgres', 'cloud-dashboard'][$index], 800, 450),
                     'promotional_video_url' => 'https://open9.dev/videos/'.Str::slug($data['title']),
                     'syllabus_file' => 'courses/'.Str::slug($data['title']).'/temario.pdf',
                     'certificate_available' => true,
@@ -382,14 +303,63 @@ class Open9DemoSeeder extends Seeder
 
     private function seedTestimonials(): void
     {
-        collect([
-            ['name' => 'Ana Rivera', 'type' => 'course', 'content' => 'El curso fue directo y aplicable.'],
-            ['name' => 'Luis Torres', 'type' => 'project', 'content' => 'El proyecto mejoro nuestro flujo administrativo.'],
-            ['name' => 'Carla Mendoza', 'type' => 'general', 'content' => 'Open9 combina claridad tecnica y ejecucion.'],
-        ])->each(fn (array $data, int $index): Testimonial => Testimonial::query()->updateOrCreate(
-            ['name' => $data['name']],
-            $data + ['profession' => 'Tech Lead', 'company' => 'Demo Co', 'rating' => 5, 'status' => 'active', 'sort_order' => $index + 1]
-        ));
+        $testimonials = [
+            [
+                'name' => 'Ana Rivera',
+                'profession' => 'CTO',
+                'company' => 'Andes Tech',
+                'type' => 'project',
+                'content' => 'OPEN9 migró nuestro e-commerce B2B sin interrumpir operaciones. El equipo entendió nuestro negocio desde el primer día.',
+                'photo' => 'person-1',
+            ],
+            [
+                'name' => 'Luis Torres',
+                'profession' => 'Director de TI',
+                'company' => 'RetailMax Perú',
+                'type' => 'project',
+                'content' => 'La migración a AWS redujo costos y mejoró tiempos de respuesta. Documentación impecable y soporte post-cutover excelente.',
+                'photo' => 'person-2',
+            ],
+            [
+                'name' => 'Carla Mendoza',
+                'profession' => 'Gerente de Operaciones',
+                'company' => 'Pacífico Express',
+                'type' => 'general',
+                'content' => 'La app de logística que desarrollaron transformó el trabajo de nuestros conductores. Entregas más rápidas y clientes más satisfechos.',
+                'photo' => 'person-3',
+            ],
+            [
+                'name' => 'Roberto Sánchez',
+                'profession' => 'CEO',
+                'company' => 'PayAndes',
+                'type' => 'project',
+                'content' => 'Confiamos en OPEN9 para nuestra pasarela de pagos. Cumplimiento, seguridad y escalabilidad desde el lanzamiento.',
+                'photo' => 'person-4',
+            ],
+            [
+                'name' => 'María Elena Vargas',
+                'profession' => 'Coordinadora Académica',
+                'company' => 'Open9 Labs',
+                'type' => 'course',
+                'content' => 'Los cursos son prácticos y actualizados. Mis equipos aplicaron lo aprendido en Laravel el mismo mes.',
+                'photo' => 'person-5',
+            ],
+        ];
+
+        foreach ($testimonials as $index => $data) {
+            $photo = $data['photo'];
+            unset($data['photo']);
+
+            Testimonial::query()->updateOrCreate(
+                ['name' => $data['name']],
+                $data + [
+                    'photo' => $this->referenceImage($photo, 200, 200),
+                    'rating' => 5,
+                    'status' => 'active',
+                    'sort_order' => $index + 1,
+                ],
+            );
+        }
     }
 
     private function seedContacts(User $admin): void

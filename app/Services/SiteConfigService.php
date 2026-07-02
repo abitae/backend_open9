@@ -409,6 +409,7 @@ class SiteConfigService
                 'title' => $service->title,
                 'description' => $service->description,
                 'icon' => $service->icon,
+                'image_url' => $this->media->url($service->main_image),
                 'price' => $service->price_label,
                 'features' => $service->features ?? [],
             ])->all();

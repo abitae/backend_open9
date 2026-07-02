@@ -22,8 +22,11 @@ class DatabaseSeeder extends Seeder
             CourseCategorySeeder::class,
             ProjectCategorySeeder::class,
             BlogCategorySeeder::class,
+            ServiceCategorySeeder::class,
             Open9DemoSeeder::class,
             SiteCmsSeeder::class,
+            ProjectsCatalogSeeder::class,
+            ServicesCatalogSeeder::class,
             BlogContentSeeder::class,
             StoreCatalogSeeder::class,
         ]);

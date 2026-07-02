@@ -4,16 +4,24 @@ namespace Database\Seeders;
 
 use App\Models\BlogCategory;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class BlogCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Laravel', 'Frontend', 'DevOps', 'Carrera Tech'] as $index => $name) {
+        $categories = [
+            ['name' => 'Cloud', 'slug' => 'cloud', 'description' => 'AWS, Azure, Google Cloud y arquitectura híbrida.'],
+            ['name' => 'DevOps', 'slug' => 'devops', 'description' => 'CI/CD, contenedores, monitoreo e infraestructura como código.'],
+            ['name' => 'Desarrollo', 'slug' => 'desarrollo', 'description' => 'Laravel, React, APIs y buenas prácticas de software.'],
+            ['name' => 'Hardware', 'slug' => 'hardware', 'description' => 'Servidores, redes y equipamiento de data center.'],
+            ['name' => 'Seguridad', 'slug' => 'seguridad', 'description' => 'Ciberseguridad, cumplimiento y hardening.'],
+            ['name' => 'Carrera Tech', 'slug' => 'carrera-tech', 'description' => 'Formación, liderazgo y tendencias del sector.'],
+        ];
+
+        foreach ($categories as $index => $data) {
             BlogCategory::query()->updateOrCreate(
-                ['slug' => Str::slug($name)],
-                ['name' => $name, 'status' => 'active', 'sort_order' => $index + 1]
+                ['slug' => $data['slug']],
+                $data + ['sort_order' => $index + 1, 'status' => 'active'],
             );
         }
     }
