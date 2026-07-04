@@ -1,9 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\Account\AddressController;
+use App\Http\Controllers\Api\Account\OrderController;
+use App\Http\Controllers\Api\Account\ProfileController;
+use App\Http\Controllers\Api\Auth\ClientAuthController;
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use App\Http\Controllers\Api\ChatController;
+use App\Http\Controllers\Api\CheckoutController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ContentController;
-use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\SiteController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,5 +25,35 @@ Route::get('/products', [ContentController::class, 'products']);
 
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/chat', [ChatController::class, 'store'])->middleware('throttle:20,1');
-Route::post('/orders', [OrderController::class, 'store'])->middleware('throttle:10,1');
-Route::post('/mercadopago/webhook', [OrderController::class, 'webhook']);
+
+Route::post('/checkout', [CheckoutController::class, 'store'])->middleware('throttle:15,1');
+Route::post('/checkout/process', [CheckoutController::class, 'process'])->middleware('throttle:15,1');
+Route::get('/orders/{orderCode}', [CheckoutController::class, 'show'])->middleware('throttle:60,1');
+Route::post('/webhooks/mercadopago', [CheckoutController::class, 'webhook']);
+
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [ClientAuthController::class, 'register'])->middleware('throttle:10,1');
+    Route::post('/login', [ClientAuthController::class, 'login'])->middleware('throttle:10,1');
+
+    Route::get('/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:20,1');
+    Route::get('/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:20,1');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [ClientAuthController::class, 'me']);
+        Route::post('/logout', [ClientAuthController::class, 'logout']);
+    });
+});
+
+Route::middleware('auth:sanctum')->prefix('account')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::put('/profile', [ProfileController::class, 'update']);
+
+    Route::get('/addresses', [AddressController::class, 'index']);
+    Route::post('/addresses', [AddressController::class, 'store']);
+    Route::put('/addresses/{address}', [AddressController::class, 'update']);
+    Route::delete('/addresses/{address}', [AddressController::class, 'destroy']);
+    Route::post('/addresses/{address}/default', [AddressController::class, 'setDefault']);
+
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::get('/orders/{orderCode}', [OrderController::class, 'show']);
+});

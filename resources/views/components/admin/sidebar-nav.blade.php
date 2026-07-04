@@ -120,7 +120,7 @@
 <flux:sidebar.group
     :heading="__('Página Tienda')"
     expandable
-    :expanded="request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.orders.*')"
+    :expanded="request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.orders.*', 'admin.payment-settings.*', 'admin.clients.*', 'admin.social-login.*')"
     class="grid"
 >
     @can('products.view')
@@ -131,6 +131,15 @@
     @endcan
     @can('orders.view')
         <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.orders.index')" :current="request()->routeIs('admin.orders.*')" wire:navigate>{{ __('Tienda — pedidos') }}</flux:sidebar.item>
+    @endcan
+    @can('clients.view')
+        <flux:sidebar.item icon="users" :href="route('admin.clients.index')" :current="request()->routeIs('admin.clients.*')" wire:navigate>{{ __('Tienda — clientes') }}</flux:sidebar.item>
+    @endcan
+    @can('payment-settings.view')
+        <flux:sidebar.item icon="credit-card" :href="route('admin.payment-settings.index')" :current="request()->routeIs('admin.payment-settings.*')" wire:navigate>{{ __('Tienda — pasarela de pagos') }}</flux:sidebar.item>
+    @endcan
+    @can('social-login.view')
+        <flux:sidebar.item icon="key" :href="route('admin.social-login.index')" :current="request()->routeIs('admin.social-login.*')" wire:navigate>{{ __('Tienda — acceso Google') }}</flux:sidebar.item>
     @endcan
 </flux:sidebar.group>
 

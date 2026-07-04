@@ -7,6 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $name
+ * @property string $slug
+ * @property string|null $description
+ * @property string $price
+ * @property string $currency
+ * @property int|null $stock
+ * @property PublishStatus $status
+ */
 class Product extends Model
 {
     use SoftDeletes;
@@ -23,6 +33,9 @@ class Product extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<ProductCategory, $this>
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');

@@ -17,6 +17,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | Base URL of the React SPA. Used to build payment gateway redirect
+    | (back) URLs. Falls back to APP_URL when not set.
+    |
+    */
+
+    'frontend_url' => env('FRONTEND_URL', env('APP_URL')),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

@@ -52,6 +52,33 @@
                                 <flux:text class="text-xs text-zinc-500">Sin etiquetas.</flux:text>
                             @endforelse
                         </div>
+                    @elseif ($type === 'order_items')
+                        @if (filled($value) && count($value) > 0)
+                            <div class="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-zinc-50 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+                                        <tr>
+                                            <th class="px-3 py-2 font-medium">Producto</th>
+                                            <th class="px-3 py-2 text-center font-medium">Cant.</th>
+                                            <th class="px-3 py-2 text-right font-medium">Precio</th>
+                                            <th class="px-3 py-2 text-right font-medium">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                                        @foreach ($value as $item)
+                                            <tr wire:key="detail-item-{{ $item->id }}">
+                                                <td class="px-3 py-2">{{ $item->product_name }}</td>
+                                                <td class="px-3 py-2 text-center">{{ $item->quantity }}</td>
+                                                <td class="px-3 py-2 text-right">{{ number_format((float) $item->unit_price, 2) }}</td>
+                                                <td class="px-3 py-2 text-right">{{ number_format((float) $item->subtotal, 2) }}</td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <flux:text class="text-xs text-zinc-500">Sin productos.</flux:text>
+                        @endif
                     @elseif ($type === 'checkbox')
                         <flux:badge size="sm" :color="$value ? 'green' : 'zinc'">{{ $value ? 'Sí' : 'No' }}</flux:badge>
                     @elseif ($type === 'url' && filled($value))

@@ -50,6 +50,9 @@ class PermissionSeeder extends Seeder
         'products',
         'product-categories',
         'orders',
+        'payment-settings',
+        'clients',
+        'social-login',
     ];
 
     public const ACTIONS = ['view', 'create', 'update', 'delete', 'restore'];

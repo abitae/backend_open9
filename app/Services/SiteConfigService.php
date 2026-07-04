@@ -18,12 +18,14 @@ use App\Models\HomeSectionSetting;
 use App\Models\HomeStat;
 use App\Models\HomeWorkflowStep;
 use App\Models\LegalPage;
+use App\Models\PaymentSetting;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\Service;
 use App\Models\Setting;
 use App\Models\SiteBranding;
 use App\Models\SocialLink;
+use App\Models\SocialLoginSetting;
 use App\Models\Testimonial;
 use Illuminate\Support\Facades\Cache;
 
@@ -50,6 +52,9 @@ class SiteConfigService
                 'welcome_message' => 'Hola, soy el asistente de OPEN9.',
                 'model' => 'gemini-2.0-flash',
             ]);
+
+            $payments = PaymentSetting::current();
+            $social = SocialLoginSetting::current();
 
             return [
                 'branding' => [
@@ -111,6 +116,16 @@ class SiteConfigService
                 ],
                 'store' => [
                     'usd_pen_rate' => $this->usdPenRate(),
+                ],
+                'payments' => [
+                    'provider' => $payments->provider,
+                    'enabled' => (bool) $payments->is_enabled && $payments->resolvedAccessToken() !== null,
+                    'public_key' => $payments->resolvedPublicKey(),
+                    'currency' => strtoupper($payments->currency ?: 'PEN'),
+                    'mode' => $payments->mode,
+                ],
+                'auth' => [
+                    'google_enabled' => $social->googleEnabled(),
                 ],
             ];
         });
