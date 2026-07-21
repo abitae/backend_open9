@@ -3,17 +3,21 @@
 namespace App\Livewire\Admin;
 
 use App\Enums\ContactStatus;
+use App\Enums\PublishStatus;
+use App\Enums\RecordStatus;
 use App\Models\AiChatSetting;
 use App\Models\BlogPost;
+use App\Models\Client;
 use App\Models\Contact;
 use App\Models\Course;
 use App\Models\CourseEnrollment;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\PaymentSetting;
 use App\Models\Product;
 use App\Models\Project;
 use App\Models\Service;
-use BackedEnum;
+use App\Models\SocialLoginSetting;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Route;
@@ -25,21 +29,58 @@ class Dashboard extends Component
     /**
      * @return list<array{label: string, value: int|string, hint?: string}>
      */
-    public function siteMetrics(): array
+    public function storeMetrics(): array
+    {
+        $payments = PaymentSetting::current();
+        $social = SocialLoginSetting::current();
+
+        $paidOrders = Order::query()->where('payment_status', 'paid');
+        $storeRevenue = (float) (clone $paidOrders)->sum('total');
+
+        return [
+            ['label' => 'Productos publicados', 'value' => Product::query()->where('status', PublishStatus::Published)->count()],
+            ['label' => 'Pedidos totales', 'value' => Order::query()->count()],
+            ['label' => 'Pedidos pendientes de pago', 'value' => Order::query()->where('payment_status', 'unpaid')->count()],
+            ['label' => 'Pedidos pagados', 'value' => (clone $paidOrders)->count()],
+            [
+                'label' => 'Ingresos tienda',
+                'value' => 'PEN '.number_format($storeRevenue, 2),
+                'hint' => 'Suma de pedidos con pago confirmado',
+            ],
+            ['label' => 'Clientes registrados', 'value' => Client::query()->where('status', RecordStatus::Active)->count()],
+            [
+                'label' => 'Pasarela MercadoPago',
+                'value' => $payments->is_enabled ? 'Activa' : 'Inactiva',
+                'hint' => $payments->is_enabled
+                    ? strtoupper((string) $payments->mode).' · Checkout Bricks'
+                    : 'Cobros deshabilitados en la tienda',
+            ],
+            [
+                'label' => 'Login con Google',
+                'value' => $social->googleEnabled() ? 'Activo' : 'Inactivo',
+                'hint' => $social->googleEnabled() ? 'Disponible en /ingresar' : 'Sin credenciales configuradas',
+            ],
+        ];
+    }
+
+    /**
+     * @return list<array{label: string, value: int|string, hint?: string}>
+     */
+    public function contentMetrics(): array
     {
         $chat = AiChatSetting::query()->first();
 
         return [
-            ['label' => 'Contactos nuevos', 'value' => Contact::query()->where('status', ContactStatus::New)->count()],
             ['label' => 'Proyectos publicados', 'value' => Project::query()->where('status', 'published')->count()],
-            ['label' => 'Proyectos destacados', 'value' => Project::query()->where('is_featured', true)->count()],
             ['label' => 'Servicios activos', 'value' => Service::query()->where('status', 'published')->count()],
             ['label' => 'Artículos publicados', 'value' => BlogPost::query()->where('status', 'published')->count()],
-            ['label' => 'Productos en tienda', 'value' => Product::query()->where('status', 'active')->count()],
+            ['label' => 'Contactos nuevos', 'value' => Contact::query()->where('status', ContactStatus::New)->count()],
             [
                 'label' => 'Chat IA',
                 'value' => $chat?->is_enabled ? 'Activo' : 'Inactivo',
-                'hint' => $chat?->provider ? strtoupper((string) $chat->provider) : 'Sin proveedor',
+                'hint' => $chat?->is_enabled
+                    ? strtoupper((string) ($chat->provider ?? 'gemini')).' · FAB en el sitio'
+                    : 'Asistente oculto en el frontend',
             ],
         ];
     }
@@ -61,30 +102,65 @@ class Dashboard extends Component
     }
 
     /**
-     * @return list<array{label: string, route: string|null, icon: string}>
+     * @return list<array{heading: string, links: list<array{label: string, route: string, icon: string}>}>
      */
-    public function quickLinks(): array
+    public function quickLinkGroups(): array
     {
-        $links = [
-            ['label' => 'Identidad y marca', 'route' => 'admin.site-branding.index', 'icon' => 'sparkles', 'permission' => 'site-branding.view'],
-            ['label' => 'Hero — card principal', 'route' => 'admin.home-hero-panel.index', 'icon' => 'presentation-chart-line', 'permission' => 'home-hero-panel.view'],
-            ['label' => 'Encabezados de secciones', 'route' => 'admin.home-section-headers.index', 'icon' => 'bars-3-bottom-left', 'permission' => 'home-section-headers.view'],
-            ['label' => 'Chat IA', 'route' => 'admin.ai-chat.index', 'icon' => 'chat-bubble-left-right', 'permission' => 'ai-chat.view'],
-            ['label' => 'Mensajes de contacto', 'route' => 'admin.contacts.index', 'icon' => 'envelope', 'permission' => 'contacts.view'],
-            ['label' => 'Proyectos', 'route' => 'admin.projects.index', 'icon' => 'folder-git-2', 'permission' => 'projects.view'],
-            ['label' => 'Blog', 'route' => 'admin.blog.index', 'icon' => 'newspaper', 'permission' => 'blog.view'],
+        $groups = [
+            [
+                'heading' => 'Tienda y clientes',
+                'links' => [
+                    ['label' => 'Productos', 'route' => 'admin.products.index', 'icon' => 'shopping-bag', 'permission' => 'products.view'],
+                    ['label' => 'Pedidos', 'route' => 'admin.orders.index', 'icon' => 'receipt-percent', 'permission' => 'orders.view'],
+                    ['label' => 'Clientes', 'route' => 'admin.clients.index', 'icon' => 'users', 'permission' => 'clients.view'],
+                    ['label' => 'Pasarela de pagos', 'route' => 'admin.payment-settings.index', 'icon' => 'credit-card', 'permission' => 'payment-settings.view'],
+                    ['label' => 'Login con Google', 'route' => 'admin.social-login.index', 'icon' => 'globe-alt', 'permission' => 'social-login.view'],
+                ],
+            ],
+            [
+                'heading' => 'Contenido del sitio',
+                'links' => [
+                    ['label' => 'Identidad y marca', 'route' => 'admin.site-branding.index', 'icon' => 'sparkles', 'permission' => 'site-branding.view'],
+                    ['label' => 'Hero — card principal', 'route' => 'admin.home-hero-panel.index', 'icon' => 'presentation-chart-line', 'permission' => 'home-hero-panel.view'],
+                    ['label' => 'Encabezados de secciones', 'route' => 'admin.home-section-headers.index', 'icon' => 'bars-3-bottom-left', 'permission' => 'home-section-headers.view'],
+                    ['label' => 'Proyectos', 'route' => 'admin.projects.index', 'icon' => 'folder-git-2', 'permission' => 'projects.view'],
+                    ['label' => 'Servicios', 'route' => 'admin.services.index', 'icon' => 'wrench-screwdriver', 'permission' => 'services.view'],
+                    ['label' => 'Blog', 'route' => 'admin.blog.index', 'icon' => 'newspaper', 'permission' => 'blog.view'],
+                ],
+            ],
+            [
+                'heading' => 'Engagement',
+                'links' => [
+                    ['label' => 'Mensajes de contacto', 'route' => 'admin.contacts.index', 'icon' => 'envelope', 'permission' => 'contacts.view'],
+                    ['label' => 'Chat IA', 'route' => 'admin.ai-chat.index', 'icon' => 'chat-bubble-left-right', 'permission' => 'ai-chat.view'],
+                ],
+            ],
         ];
 
-        return collect($links)
-            ->filter(fn (array $link): bool => auth()->user()?->can($link['permission']) ?? false)
-            ->filter(fn (array $link): bool => $link['route'] !== null && Route::has($link['route']))
-            ->map(fn (array $link): array => [
-                'label' => $link['label'],
-                'route' => $link['route'],
-                'icon' => $link['icon'],
-            ])
+        /** @var list<array{heading: string, links: list<array{label: string, route: string, icon: string}>}> $filtered */
+        $filtered = collect($groups)
+            ->map(function (array $group): array {
+                $links = collect($group['links'])
+                    ->filter(fn (array $link): bool => auth()->user()?->can($link['permission']) ?? false)
+                    ->filter(fn (array $link): bool => Route::has($link['route']))
+                    ->map(fn (array $link): array => [
+                        'label' => $link['label'],
+                        'route' => $link['route'],
+                        'icon' => $link['icon'],
+                    ])
+                    ->values()
+                    ->all();
+
+                return [
+                    'heading' => $group['heading'],
+                    'links' => $links,
+                ];
+            })
+            ->filter(fn (array $group): bool => count($group['links']) > 0)
             ->values()
             ->all();
+
+        return $filtered;
     }
 
     /**
@@ -96,14 +172,6 @@ class Dashboard extends Component
     }
 
     /**
-     * @return Collection<int, BlogPost>
-     */
-    public function latestPosts(): Collection
-    {
-        return BlogPost::query()->latest('published_at')->limit(5)->get();
-    }
-
-    /**
      * @return Collection<int, Order>
      */
     public function latestOrders(): Collection
@@ -112,7 +180,15 @@ class Dashboard extends Component
     }
 
     /**
-     * @return array{labels: list<string>, contacts: list<int>, posts: list<int>, orders: list<int>, max: float}
+     * @return Collection<int, Client>
+     */
+    public function latestClients(): Collection
+    {
+        return Client::query()->latest()->limit(5)->get();
+    }
+
+    /**
+     * @return array{labels: list<string>, contacts: list<int>, clients: list<int>, orders: list<int>, max: float}
      */
     public function monthlySeries(): array
     {
@@ -127,10 +203,10 @@ class Dashboard extends Component
             ->get(['created_at'])
             ->groupBy(fn (Contact $contact): string => $contact->created_at->format('Y-m'));
 
-        $posts = BlogPost::query()
-            ->whereBetween('published_at', [$start, $end])
-            ->get(['published_at'])
-            ->groupBy(fn (BlogPost $post): string => $post->published_at?->format('Y-m') ?? '');
+        $clients = Client::query()
+            ->whereBetween('created_at', [$start, $end])
+            ->get(['created_at'])
+            ->groupBy(fn (Client $client): string => $client->created_at->format('Y-m'));
 
         $orders = Order::query()
             ->whereBetween('created_at', [$start, $end])
@@ -139,23 +215,23 @@ class Dashboard extends Component
 
         $labels = [];
         $contactCounts = [];
-        $postCounts = [];
+        $clientCounts = [];
         $orderCounts = [];
 
         foreach ($months as $month) {
             $key = $month->format('Y-m');
             $labels[] = $month->format('M');
             $contactCounts[] = $contacts->get($key, collect())->count();
-            $postCounts[] = $posts->get($key, collect())->count();
+            $clientCounts[] = $clients->get($key, collect())->count();
             $orderCounts[] = $orders->get($key, collect())->count();
         }
 
         return [
             'labels' => $labels,
             'contacts' => $contactCounts,
-            'posts' => $postCounts,
+            'clients' => $clientCounts,
             'orders' => $orderCounts,
-            'max' => max(1, ...$contactCounts, ...$postCounts, ...$orderCounts),
+            'max' => max(1, ...$contactCounts, ...$clientCounts, ...$orderCounts),
         ];
     }
 

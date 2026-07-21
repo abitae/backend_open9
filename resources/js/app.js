@@ -51,14 +51,14 @@ window.renderOpen9DashboardCharts = (series) => {
         options: chartDefaults,
     });
 
-    render('posts-chart', {
+    render('clients-chart', {
         type: 'bar',
         data: {
             labels: series.labels,
             datasets: [{
-                label: 'Artículos',
-                data: series.posts,
-                backgroundColor: '#059669',
+                label: 'Clientes',
+                data: series.clients,
+                backgroundColor: '#7c3aed',
                 borderRadius: 6,
             }],
         },

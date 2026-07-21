@@ -91,10 +91,12 @@ it('renders the admin dashboard for the seeded super admin', function (): void {
     $this->actingAs($admin)
         ->get(route('admin.dashboard'))
         ->assertOk()
-        ->assertSee('Resumen operativo de Open9')
-        ->assertSee('Inscripciones mensuales')
-        ->assertSee('Pagos aprobados')
-        ->assertSee('Ingresos');
+        ->assertSee('Resumen operativo del frontend OPEN9')
+        ->assertSee('Tienda y clientes')
+        ->assertSee('Clientes registrados')
+        ->assertSee('Pasarela MercadoPago')
+        ->assertSee('Login con Google')
+        ->assertSee('Ingresos academia');
 });
 
 it('stores public contact messages', function (): void {
