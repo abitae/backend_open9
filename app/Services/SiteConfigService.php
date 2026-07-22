@@ -319,7 +319,10 @@ class SiteConfigService
                     ->map(fn (Testimonial $t): array => [
                         'quote' => $t->content,
                         'author' => $t->name,
+                        'profession' => $t->profession,
+                        'company' => $t->company,
                         'role' => trim(($t->profession ?? '').($t->company ? ', '.$t->company : '')),
+                        'rating' => (int) ($t->rating ?? 5),
                         'photo_url' => $this->media->url($t->photo),
                     ])->all(),
             ];

@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\SiteBranding;
 use App\Services\MediaStorageService;
 use App\Services\SiteConfigService;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -90,12 +91,36 @@ class SiteBrandingAdmin extends Component
         $this->faviconUpload = null;
         $this->backgroundVideoUpload = null;
 
-        session()->flash('status', 'Identidad del sitio actualizada.');
+        session()->flash('status', 'Identidad del sitio actualizada. Los cambios se reflejan en el frontend público.');
     }
 
     public function mediaUrl(?string $path): ?string
     {
         return app(MediaStorageService::class)->url($path);
+    }
+
+    public function frontendUrl(): string
+    {
+        return rtrim((string) (config('app.frontend_url') ?: config('app.url')), '/');
+    }
+
+    /**
+     * @return list<array{label: string, route: string|null}>
+     */
+    public function relatedModules(): array
+    {
+        $modules = [
+            ['label' => 'Hero — card principal', 'route' => 'admin.home-hero-panel.index'],
+            ['label' => 'Footer — grupos de enlaces', 'route' => 'admin.footer-link-groups.index'],
+            ['label' => 'Footer — enlaces', 'route' => 'admin.footer-links.index'],
+            ['label' => 'Redes sociales', 'route' => 'admin.social-links.index'],
+            ['label' => 'Chat IA', 'route' => 'admin.ai-chat.index'],
+        ];
+
+        return collect($modules)
+            ->filter(fn (array $module): bool => $module['route'] !== null && Route::has($module['route']))
+            ->values()
+            ->all();
     }
 
     public function render(): View
