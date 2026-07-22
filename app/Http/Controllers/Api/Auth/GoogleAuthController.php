@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\SocialLoginSetting;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
@@ -17,29 +19,38 @@ class GoogleAuthController extends Controller
 {
     /**
      * Redirige a Google si el módulo está habilitado y configurado.
+     * Acepta ?return_to= para devolver al frontend correcto tras el login
+     * (p. ej. localhost:3002 en dev aunque FRONTEND_URL apunte a otro puerto).
      */
-    public function redirect(): SymfonyRedirectResponse|RedirectResponse
+    public function redirect(Request $request): SymfonyRedirectResponse|RedirectResponse
     {
+        $returnTo = $this->resolveReturnTo($request->query('return_to'));
+
         $settings = SocialLoginSetting::current();
 
         if (! $settings->googleEnabled()) {
-            return redirect($this->frontendUrl('/ingresar?error=google_disabled'));
+            return redirect($this->frontendUrl('/ingresar?error=google_disabled', $returnTo));
         }
 
         $this->configureDriver($settings);
 
-        return $this->googleDriver()->redirect();
+        $state = Str::random(40);
+        Cache::put($this->oauthCacheKey($state), $returnTo, now()->addMinutes(10));
+
+        return $this->googleDriver()->with(['state' => $state])->redirect();
     }
 
     /**
      * Recibe el callback de Google, crea/busca el Client y emite un token.
      */
-    public function callback(): RedirectResponse
+    public function callback(Request $request): RedirectResponse
     {
+        $returnTo = $this->pullReturnTo((string) $request->query('state', ''));
+
         $settings = SocialLoginSetting::current();
 
         if (! $settings->googleEnabled()) {
-            return redirect($this->frontendUrl('/ingresar?error=google_disabled'));
+            return redirect($this->frontendUrl('/ingresar?error=google_disabled', $returnTo));
         }
 
         $this->configureDriver($settings);
@@ -49,13 +60,13 @@ class GoogleAuthController extends Controller
         } catch (\Throwable $exception) {
             Log::warning('Fallo en el callback de Google.', ['error' => $exception->getMessage()]);
 
-            return redirect($this->frontendUrl('/ingresar?error=google_failed'));
+            return redirect($this->frontendUrl('/ingresar?error=google_failed', $returnTo));
         }
 
         $email = $googleUser->getEmail();
 
         if ($email === null || $email === '') {
-            return redirect($this->frontendUrl('/ingresar?error=google_no_email'));
+            return redirect($this->frontendUrl('/ingresar?error=google_no_email', $returnTo));
         }
 
         $client = Client::query()->where('google_id', $googleUser->getId())->first()
@@ -81,7 +92,7 @@ class GoogleAuthController extends Controller
 
         $token = $client->createToken('google')->plainTextToken;
 
-        return redirect($this->frontendUrl('/auth/callback?token='.urlencode($token)));
+        return redirect($this->frontendUrl('/auth/callback?token='.urlencode($token), $returnTo));
     }
 
     /**
@@ -106,10 +117,61 @@ class GoogleAuthController extends Controller
         ]);
     }
 
-    private function frontendUrl(string $path): string
+    private function pullReturnTo(string $state): string
     {
-        $base = rtrim((string) (config('app.frontend_url') ?: config('app.url')), '/');
+        if ($state === '') {
+            return $this->defaultFrontendBase();
+        }
 
-        return $base.'/'.ltrim($path, '/');
+        $cached = Cache::pull($this->oauthCacheKey($state));
+
+        return is_string($cached) && $cached !== ''
+            ? $cached
+            : $this->defaultFrontendBase();
+    }
+
+    private function resolveReturnTo(mixed $returnTo): string
+    {
+        $default = $this->defaultFrontendBase();
+
+        if (! is_string($returnTo) || $returnTo === '') {
+            return $default;
+        }
+
+        $returnTo = rtrim($returnTo, '/');
+        $parts = parse_url($returnTo);
+
+        if (! is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+            return $default;
+        }
+
+        if (app()->environment('local')) {
+            if (in_array($parts['host'], ['localhost', '127.0.0.1', '[::1]'], true)) {
+                return $returnTo;
+            }
+        }
+
+        $allowed = rtrim((string) config('app.frontend_url'), '/');
+
+        if ($allowed !== '' && ($returnTo === $allowed || str_starts_with($returnTo, $allowed.'/'))) {
+            return $returnTo;
+        }
+
+        return $default;
+    }
+
+    private function defaultFrontendBase(): string
+    {
+        return rtrim((string) (config('app.frontend_url') ?: config('app.url')), '/');
+    }
+
+    private function frontendUrl(string $path, ?string $base = null): string
+    {
+        return rtrim($base ?? $this->defaultFrontendBase(), '/').'/'.ltrim($path, '/');
+    }
+
+    private function oauthCacheKey(string $state): string
+    {
+        return 'google_oauth_return:'.hash('sha256', $state);
     }
 }

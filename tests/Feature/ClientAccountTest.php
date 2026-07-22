@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\SocialLoginSetting;
 use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -347,6 +348,31 @@ it('creates and logs in a client through the Google callback', function (): void
         'email' => 'google-client@example.com',
         'google_id' => 'google-999',
     ]);
+});
+
+it('redirects google callback to the frontend origin that started login', function (): void {
+    enableGoogleLogin();
+
+    $googleUser = new User;
+    $googleUser->map([
+        'id' => 'google-888',
+        'name' => 'Port Client',
+        'email' => 'port-client@example.com',
+        'avatar' => null,
+    ]);
+
+    $provider = Mockery::mock(AbstractProvider::class);
+    $provider->shouldReceive('stateless')->andReturnSelf();
+    $provider->shouldReceive('user')->andReturn($googleUser);
+    Socialite::shouldReceive('driver')->with('google')->andReturn($provider);
+
+    $state = 'oauth-state-token';
+    Cache::put('google_oauth_return:'.hash('sha256', $state), 'http://localhost:3002', now()->addMinutes(10));
+
+    $response = $this->get('/api/auth/google/callback?code=fake-code&state='.$state);
+
+    $response->assertRedirect();
+    expect($response->headers->get('Location'))->toStartWith('http://localhost:3002/auth/callback?token=');
 });
 
 it('redirects to the frontend with an error when google is disabled', function (): void {
