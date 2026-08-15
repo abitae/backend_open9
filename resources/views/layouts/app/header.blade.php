@@ -18,25 +18,13 @@
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('Buscar')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('Buscar')" />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Repositorio')" position="bottom">
+                <flux:tooltip :content="__('Ver sitio público')" position="bottom">
                     <flux:navbar.item
                         class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="folder-git-2"
-                        href="https://github.com/laravel/livewire-starter-kit"
+                        icon="arrow-top-right-on-square"
+                        href="{{ config('app.frontend_url', '/') }}"
                         target="_blank"
-                        :label="__('Repositorio')"
-                    />
-                </flux:tooltip>
-                <flux:tooltip :content="__('Documentación')" position="bottom">
-                    <flux:navbar.item
-                        class="h-10 max-lg:hidden [&>div>svg]:size-5"
-                        icon="book-open-text"
-                        href="https://laravel.com/docs/starter-kits#livewire"
-                        target="_blank"
-                        :label="__('Documentación')"
+                        :label="__('Ver sitio público')"
                     />
                 </flux:tooltip>
             </flux:navbar>
@@ -62,11 +50,8 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repositorio') }}
-                </flux:sidebar.item>
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentación') }}
+                <flux:sidebar.item icon="arrow-top-right-on-square" href="{{ config('app.frontend_url', '/') }}" target="_blank">
+                    {{ __('Ver sitio público') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
         </flux:sidebar>

@@ -19,7 +19,11 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Models\SocialLoginSetting;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
 use Livewire\Component;
@@ -197,21 +201,11 @@ class Dashboard extends Component
 
         $start = $months->first();
         $end = now()->endOfMonth();
+        $monthExpression = $this->monthKeyExpression();
 
-        $contacts = Contact::query()
-            ->whereBetween('created_at', [$start, $end])
-            ->get(['created_at'])
-            ->groupBy(fn (Contact $contact): string => $contact->created_at->format('Y-m'));
-
-        $clients = Client::query()
-            ->whereBetween('created_at', [$start, $end])
-            ->get(['created_at'])
-            ->groupBy(fn (Client $client): string => $client->created_at->format('Y-m'));
-
-        $orders = Order::query()
-            ->whereBetween('created_at', [$start, $end])
-            ->get(['created_at'])
-            ->groupBy(fn (Order $order): string => $order->created_at->format('Y-m'));
+        $contacts = $this->monthlyCounts(Contact::query(), $start, $end, $monthExpression);
+        $clients = $this->monthlyCounts(Client::query(), $start, $end, $monthExpression);
+        $orders = $this->monthlyCounts(Order::query(), $start, $end, $monthExpression);
 
         $labels = [];
         $contactCounts = [];
@@ -221,9 +215,9 @@ class Dashboard extends Component
         foreach ($months as $month) {
             $key = $month->format('Y-m');
             $labels[] = $month->format('M');
-            $contactCounts[] = $contacts->get($key, collect())->count();
-            $clientCounts[] = $clients->get($key, collect())->count();
-            $orderCounts[] = $orders->get($key, collect())->count();
+            $contactCounts[] = $contacts[$key] ?? 0;
+            $clientCounts[] = $clients[$key] ?? 0;
+            $orderCounts[] = $orders[$key] ?? 0;
         }
 
         return [
@@ -233,6 +227,32 @@ class Dashboard extends Component
             'orders' => $orderCounts,
             'max' => max(1, ...$contactCounts, ...$clientCounts, ...$orderCounts),
         ];
+    }
+
+    /**
+     * @param  Builder<Model>  $query
+     * @return array<string, int>
+     */
+    private function monthlyCounts(Builder $query, CarbonImmutable $start, Carbon $end, string $monthExpression): array
+    {
+        return $query
+            ->whereBetween('created_at', [$start, $end])
+            ->toBase()
+            ->selectRaw($monthExpression.' as month_key')
+            ->selectRaw('count(*) as aggregate')
+            ->groupByRaw($monthExpression)
+            ->pluck('aggregate', 'month_key')
+            ->map(fn (mixed $count): int => (int) $count)
+            ->all();
+    }
+
+    private function monthKeyExpression(): string
+    {
+        return match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m', created_at)",
+            'pgsql' => "to_char(created_at, 'YYYY-MM')",
+            default => "DATE_FORMAT(created_at, '%Y-%m')",
+        };
     }
 
     public function render(): View

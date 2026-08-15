@@ -17,12 +17,8 @@
             <flux:spacer />
 
             <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repositorio') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentación') }}
+                <flux:sidebar.item icon="arrow-top-right-on-square" href="{{ config('app.frontend_url', '/') }}" target="_blank">
+                    {{ __('Ver sitio público') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
 

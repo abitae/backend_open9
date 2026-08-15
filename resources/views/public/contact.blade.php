@@ -1,25 +1,58 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <main class="mx-auto max-w-xl px-4 py-8">
-            <h1 class="text-2xl font-semibold">Contacto</h1>
+<x-layouts::public>
+    <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-xs font-semibold tracking-widest text-[#315ed1] uppercase">Contacto</p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight">Hablemos de tu proyecto</h1>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-500">
+            Cuéntanos qué necesitas. Te respondemos en menos de 24 horas.
+        </p>
 
-            @if (session('status'))
-                <p class="mt-3 rounded border border-emerald-300 px-3 py-2 text-sm text-emerald-700">{{ session('status') }}</p>
-            @endif
+        @if (session('status'))
+            <p class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status">
+                {{ session('status') }}
+            </p>
+        @endif
 
-            <form method="POST" action="{{ route('contact.store') }}" class="mt-4 space-y-3">
-                @csrf
-                <input name="name" value="{{ old('name') }}" placeholder="Nombre" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="email" value="{{ old('email') }}" placeholder="Email" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="phone" value="{{ old('phone') }}" placeholder="Telefono" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="subject" value="{{ old('subject') }}" placeholder="Asunto" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <textarea name="message" placeholder="Mensaje" class="min-h-32 w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">{{ old('message') }}</textarea>
-                <button class="rounded bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">Enviar</button>
-            </form>
-        </main>
-    </body>
-</html>
+        @if ($errors->any())
+            <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+                Revisa los campos marcados e inténtalo de nuevo.
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('contact.store') }}" class="mt-6 space-y-4">
+            @csrf
+
+            <div>
+                <label for="name" class="mb-1.5 block text-sm font-medium">Nombre</label>
+                <input id="name" name="name" value="{{ old('name') }}" required autocomplete="name" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                @error('name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div>
+                <label for="email" class="mb-1.5 block text-sm font-medium">Correo electrónico</label>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="phone" class="mb-1.5 block text-sm font-medium">Teléfono</label>
+                    <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" autocomplete="tel" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+                <div>
+                    <label for="subject" class="mb-1.5 block text-sm font-medium">Asunto</label>
+                    <input id="subject" name="subject" value="{{ old('subject') }}" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+            </div>
+
+            <div>
+                <label for="message" class="mb-1.5 block text-sm font-medium">Mensaje</label>
+                <textarea id="message" name="message" required rows="5" class="min-h-32 w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">{{ old('message') }}</textarea>
+                @error('message') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-[#4f83ff] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#315ed1]">
+                Enviar mensaje
+            </button>
+        </form>
+    </div>
+</x-layouts::public>

@@ -96,7 +96,9 @@ it('renders the admin dashboard for the seeded super admin', function (): void {
         ->assertSee('Clientes registrados')
         ->assertSee('Pasarela MercadoPago')
         ->assertSee('Login con Google')
-        ->assertSee('Ingresos academia');
+        ->assertSee('Ingresos academia')
+        ->assertSee('OPEN9')
+        ->assertSee('Ver sitio público');
 });
 
 it('stores public contact messages', function (): void {

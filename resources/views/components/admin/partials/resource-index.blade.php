@@ -1,14 +1,14 @@
 @php($meta = $this->meta())
 
-<section class="space-y-3">
-    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+<section class="space-y-4">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <flux:heading size="xl">{{ $meta['title'] }}</flux:heading>
-            <flux:text class="text-xs">{{ $meta['description'] }}</flux:text>
+            <flux:text class="mt-0.5 text-sm text-zinc-500">{{ $meta['description'] }}</flux:text>
         </div>
 
         @if ($meta['canCreate'])
-            <flux:button icon="plus" size="sm" wire:click="create">Nuevo</flux:button>
+            <flux:button icon="plus" size="sm" variant="primary" wire:click="create">Nuevo</flux:button>
         @endif
     </div>
 
@@ -16,9 +16,9 @@
         <flux:callout variant="success" size="sm">{{ session('status') }}</flux:callout>
     @endif
 
-    <div class="flex gap-2">
-        <flux:input size="sm" wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Buscar" />
-        <flux:select size="sm" wire:model.live="status" class="max-w-44">
+    <div class="flex flex-col gap-2 sm:flex-row">
+        <flux:input class="min-w-0 flex-1" size="sm" wire:model.live.debounce.300ms="search" icon="magnifying-glass" placeholder="Buscar" />
+        <flux:select size="sm" wire:model.live="status" class="sm:max-w-44">
             <option value="">Todos</option>
             <option value="active">Activo</option>
             <option value="draft">Borrador</option>
@@ -29,28 +29,28 @@
         </flux:select>
     </div>
 
-    <div class="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div class="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
         <table class="w-full text-left text-xs">
-            <thead class="bg-zinc-50 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">
+            <thead class="bg-zinc-50 text-zinc-600 dark:bg-zinc-950 dark:text-zinc-300">
                 <tr>
                     @foreach ($meta['columns'] as $field => $label)
-                        <th class="px-3 py-2 font-medium">
-                            <button type="button" wire:click="sortBy('{{ $field }}')" class="inline-flex items-center gap-1">
+                        <th class="px-3 py-2.5 font-medium">
+                            <button type="button" wire:click="sortBy('{{ $field }}')" class="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white">
                                 {{ $label }}
                                 @if ($sortField === $field)
-                                    <span>{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
+                                    <span class="text-accent">{{ $sortDirection === 'asc' ? '↑' : '↓' }}</span>
                                 @endif
                             </button>
                         </th>
                     @endforeach
-                    <th class="w-28 px-3 py-2 text-right font-medium">Acciones</th>
+                    <th class="w-28 px-3 py-2.5 text-right font-medium">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 @forelse ($this->records() as $record)
-                    <tr wire:key="record-{{ $record->getKey() }}" class="bg-white dark:bg-zinc-800">
+                    <tr wire:key="record-{{ $record->getKey() }}" class="transition hover:bg-zinc-50 dark:hover:bg-zinc-800/70">
                         @foreach ($meta['columns'] as $field => $label)
-                            <td class="max-w-72 truncate px-3 py-2">
+                            <td class="max-w-72 truncate px-3 py-2.5">
                                 @php($value = data_get($record, $field))
                                 @if ($value instanceof \BackedEnum)
                                     {{ $this->displayValue($value->value) }}
@@ -61,7 +61,7 @@
                                 @endif
                             </td>
                         @endforeach
-                        <td class="px-3 py-2">
+                        <td class="px-3 py-2.5">
                             <div class="flex justify-end gap-1">
                                 @if ($meta['canBuild'])
                                     <flux:button icon="rectangle-stack" size="xs" variant="ghost" :href="route($meta['builderRouteName'], $record->getKey())" wire:navigate />
@@ -78,7 +78,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ count($meta['columns']) + 1 }}" class="px-3 py-8 text-center text-zinc-500">Sin registros.</td>
+                        <td colspan="{{ count($meta['columns']) + 1 }}" class="px-3 py-12 text-center">
+                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200">Sin registros</p>
+                            <p class="mt-1 text-xs text-zinc-500">Prueba otra búsqueda o crea un registro nuevo.</p>
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

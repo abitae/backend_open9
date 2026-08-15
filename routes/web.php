@@ -82,7 +82,7 @@ Route::post('/cursos/{slug}/inscripcion', function (Request $request, string $sl
         'registered_at' => now(),
     ]);
 
-    return back()->with('status', 'Enrollment sent.');
+    return back()->with('status', 'Inscripción enviada. Te contactaremos pronto.');
 })->middleware('throttle:10,1')->name('courses.enrollment.store');
 Route::view('/certificados/verificar/{code}', 'public.placeholder', ['title' => 'Verificar certificado'])->name('certificates.verify');
 Route::post('/contacto', function (Request $request) {
@@ -94,7 +94,7 @@ Route::post('/contacto', function (Request $request) {
         'message' => ['required', 'string', 'max:5000'],
     ]) + ['source' => 'web', 'status' => 'new']);
 
-    return back()->with('status', 'Message sent.');
+    return back()->with('status', 'Mensaje enviado. Te responderemos pronto.');
 })->middleware('throttle:10,1')->name('contact.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -44,7 +44,7 @@ window.renderOpen9DashboardCharts = (series) => {
             datasets: [{
                 label: 'Contactos',
                 data: series.contacts,
-                backgroundColor: '#18181b',
+                backgroundColor: '#4f83ff',
                 borderRadius: 6,
             }],
         },
@@ -58,7 +58,7 @@ window.renderOpen9DashboardCharts = (series) => {
             datasets: [{
                 label: 'Clientes',
                 data: series.clients,
-                backgroundColor: '#7c3aed',
+                backgroundColor: '#9a72f8',
                 borderRadius: 6,
             }],
         },
@@ -72,8 +72,8 @@ window.renderOpen9DashboardCharts = (series) => {
             datasets: [{
                 label: 'Pedidos',
                 data: series.orders,
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37, 99, 235, 0.12)',
+                borderColor: '#4f83ff',
+                backgroundColor: 'rgba(79, 131, 255, 0.14)',
                 fill: true,
                 tension: 0.35,
                 pointRadius: 3,

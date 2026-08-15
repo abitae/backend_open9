@@ -1,30 +1,79 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        @include('partials.head')
-    </head>
-    <body class="min-h-screen bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <main class="mx-auto max-w-xl px-4 py-8">
-            <h1 class="text-2xl font-semibold">Inscripcion</h1>
-            <p class="mt-1 text-sm text-zinc-500">{{ $course->title }}</p>
+<x-layouts::public>
+    <div class="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
+        <p class="text-xs font-semibold tracking-widest text-[#315ed1] uppercase">Inscripción</p>
+        <h1 class="mt-2 text-2xl font-semibold tracking-tight">{{ $course->title }}</h1>
+        <p class="mt-2 text-sm leading-relaxed text-zinc-500">
+            Completa tus datos y te contactaremos para confirmar el cupo y el pago.
+        </p>
 
-            @if (session('status'))
-                <p class="mt-3 rounded border border-emerald-300 px-3 py-2 text-sm text-emerald-700">{{ session('status') }}</p>
-            @endif
+        @if (session('status'))
+            <p class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="status">
+                {{ session('status') }}
+            </p>
+        @endif
 
-            <form method="POST" action="{{ route('courses.enrollment.store', $course->slug) }}" class="mt-4 space-y-3">
-                @csrf
-                <input name="full_name" value="{{ old('full_name') }}" placeholder="Nombre completo" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="document_type" value="{{ old('document_type') }}" placeholder="Tipo de documento" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="document_number" value="{{ old('document_number') }}" placeholder="Numero de documento" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="email" value="{{ old('email') }}" placeholder="Email" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="phone" value="{{ old('phone') }}" placeholder="Telefono" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="city" value="{{ old('city') }}" placeholder="Ciudad" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="occupation" value="{{ old('occupation') }}" placeholder="Ocupacion" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <input name="company" value="{{ old('company') }}" placeholder="Empresa" class="w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">
-                <textarea name="notes" placeholder="Notas" class="min-h-24 w-full rounded border px-3 py-2 text-sm dark:bg-zinc-900">{{ old('notes') }}</textarea>
-                <button class="rounded bg-zinc-900 px-4 py-2 text-sm text-white dark:bg-zinc-100 dark:text-zinc-900">Enviar inscripcion</button>
-            </form>
-        </main>
-    </body>
-</html>
+        @if ($errors->any())
+            <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+                Revisa los campos marcados e inténtalo de nuevo.
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('courses.enrollment.store', $course->slug) }}" class="mt-6 space-y-4">
+            @csrf
+
+            <div>
+                <label for="full_name" class="mb-1.5 block text-sm font-medium">Nombre completo</label>
+                <input id="full_name" name="full_name" value="{{ old('full_name') }}" required autocomplete="name" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                @error('full_name') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="document_type" class="mb-1.5 block text-sm font-medium">Tipo de documento</label>
+                    <input id="document_type" name="document_type" value="{{ old('document_type') }}" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+                <div>
+                    <label for="document_number" class="mb-1.5 block text-sm font-medium">Número de documento</label>
+                    <input id="document_number" name="document_number" value="{{ old('document_number') }}" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="mb-1.5 block text-sm font-medium">Correo electrónico</label>
+                <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="email" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                @error('email') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="phone" class="mb-1.5 block text-sm font-medium">Teléfono</label>
+                    <input id="phone" name="phone" type="tel" value="{{ old('phone') }}" autocomplete="tel" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+                <div>
+                    <label for="city" class="mb-1.5 block text-sm font-medium">Ciudad</label>
+                    <input id="city" name="city" value="{{ old('city') }}" autocomplete="address-level2" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="occupation" class="mb-1.5 block text-sm font-medium">Ocupación</label>
+                    <input id="occupation" name="occupation" value="{{ old('occupation') }}" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+                <div>
+                    <label for="company" class="mb-1.5 block text-sm font-medium">Empresa</label>
+                    <input id="company" name="company" value="{{ old('company') }}" autocomplete="organization" class="w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">
+                </div>
+            </div>
+
+            <div>
+                <label for="notes" class="mb-1.5 block text-sm font-medium">Notas</label>
+                <textarea id="notes" name="notes" rows="4" class="min-h-24 w-full rounded-xl border border-zinc-200 bg-[#f8faff] px-3 py-2.5 text-sm outline-none transition focus:border-[#7ea5ff] focus:ring-2 focus:ring-[#4f83ff]/20">{{ old('notes') }}</textarea>
+            </div>
+
+            <button type="submit" class="inline-flex w-full items-center justify-center rounded-full bg-[#4f83ff] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-[#315ed1]">
+                Enviar inscripción
+            </button>
+        </form>
+    </div>
+</x-layouts::public>
