@@ -138,6 +138,16 @@ it('serves the public store shell', function (): void {
     $this->get('/tienda')->assertOk();
 });
 
+it('serves the public store login at /ingresar', function (): void {
+    $this->get('/ingresar')
+        ->assertOk()
+        ->assertHeader('content-type', 'text/html; charset=UTF-8');
+});
+
+it('redirects /login to the public store login', function (): void {
+    $this->get('/login')->assertRedirect('/ingresar');
+});
+
 it('returns published legal pages and 404 for unknown slugs', function (): void {
     $this->getJson('/api/legal/terminos')
         ->assertOk()

@@ -4,6 +4,8 @@ use App\Models\User;
 use Laravel\Fortify\Features;
 
 test('login screen can be rendered', function () {
+    expect(parse_url(route('login'), PHP_URL_PATH))->toBe('/admin/login');
+
     $response = $this->get(route('login'));
 
     $response->assertOk()

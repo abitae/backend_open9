@@ -154,6 +154,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 require __DIR__.'/settings.php';
 
+Route::redirect('/login', '/ingresar');
+Route::redirect('/register', '/registro');
+
 Route::get('/{any?}', function () {
     $index = public_path('index.html');
 
