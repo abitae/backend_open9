@@ -1,1 +1,37 @@
-import{j as e,m as i,n as t,S as c}from"./index-BHPdvlM3.js";function o({label:a,title:l,description:r,children:s}){return e.jsx("section",{className:"page-hero-shell",children:e.jsx("div",{className:"mx-auto max-w-7xl",children:e.jsxs("div",{className:"liquid-glass-strong page-hero-card glow-tech relative overflow-hidden rounded-[2.5rem] border border-white/5 px-6 py-14 lg:px-14 lg:py-20",children:[e.jsx("div",{className:"circuit-dots absolute inset-0 opacity-20","aria-hidden":!0}),e.jsx("div",{className:"hero-orb hero-orb-a"}),e.jsx("div",{className:"hero-orb hero-orb-b"}),e.jsxs("div",{className:"relative z-10 max-w-3xl page-hero-content",children:[e.jsx("span",{className:"badge-tech",children:a}),e.jsx("h1",{className:"text-tech-primary font-display mt-6 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl",children:l}),e.jsx("p",{className:"text-tech-muted mt-5 max-w-2xl text-sm leading-relaxed lg:text-base",children:r}),s&&e.jsx("div",{className:"mt-8 flex flex-wrap gap-3",children:s})]}),e.jsxs("div",{className:"page-hero-visual","aria-hidden":!0,children:[e.jsx("span",{className:"page-visual-orbit page-visual-orbit-one"}),e.jsx("span",{className:"page-visual-orbit page-visual-orbit-two"}),e.jsx("span",{className:"page-visual-core",children:e.jsx(i,{})}),e.jsxs("span",{className:"page-visual-chip page-visual-chip-cloud",children:[e.jsx(t,{})," Cloud"]}),e.jsxs("span",{className:"page-visual-chip page-visual-chip-server",children:[e.jsx(c,{})," Infraestructura"]})]})]})})})}export{o as P};
+import { j as e } from "./index-BHPdvlM3.js";
+
+function PageHeader({ label, title, description, children }) {
+  return e.jsx("section", {
+    className: "page-hero-shell",
+    children: e.jsx("div", {
+      className: "mx-auto max-w-7xl",
+      children: e.jsxs("div", {
+        className: "liquid-glass-strong page-hero-card glow-tech relative overflow-hidden rounded-[1.75rem] border border-white/5 px-5 py-6 lg:px-8 lg:py-7",
+        children: [
+          e.jsx("div", { className: "circuit-dots absolute inset-0 opacity-10", "aria-hidden": true }),
+          e.jsxs("div", {
+            className: "page-hero-content relative z-10 max-w-3xl",
+            children: [
+              label ? e.jsx("span", { className: "badge-tech", children: label }) : null,
+              e.jsx("h1", {
+                className: "text-tech-primary font-display mt-3 text-3xl font-semibold tracking-tight sm:text-4xl",
+                children: title,
+              }),
+              description
+                ? e.jsx("p", {
+                    className: "text-tech-muted mt-3 max-w-2xl text-sm leading-relaxed",
+                    children: description,
+                  })
+                : null,
+              children
+                ? e.jsx("div", { className: "mt-5 flex flex-wrap gap-3", children })
+                : null,
+            ],
+          }),
+        ],
+      }),
+    }),
+  });
+}
+
+export { PageHeader as P };

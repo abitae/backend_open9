@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Product;
+use App\Models\ProductBrand;
 use App\Models\ProductCategory;
 use Database\Seeders\Concerns\SeedsReferenceImages;
 use Illuminate\Database\Seeder;
@@ -14,7 +15,8 @@ class StoreCatalogSeeder extends Seeder
     public function run(): void
     {
         $categories = $this->seedCategories();
-        $this->seedProducts($categories);
+        $brands = $this->seedBrands();
+        $this->seedProducts($categories, $brands);
     }
 
     /**
@@ -41,15 +43,50 @@ class StoreCatalogSeeder extends Seeder
     }
 
     /**
-     * @param  array<string, ProductCategory>  $categories
+     * @return array<string, ProductBrand>
      */
-    private function seedProducts(array $categories): void
+    private function seedBrands(): array
+    {
+        $definitions = [
+            ['name' => 'Dell', 'slug' => 'dell', 'description' => 'Servidores y workstations empresariales.', 'image' => 'product-rack'],
+            ['name' => 'Cisco', 'slug' => 'cisco', 'description' => 'Equipos de red y switching.', 'image' => 'product-switch'],
+            ['name' => 'Synology', 'slug' => 'synology', 'description' => 'Almacenamiento NAS y backup.', 'image' => 'product-nas'],
+            ['name' => 'AWS', 'slug' => 'aws', 'description' => 'Cloud, créditos y servicios gestionados.', 'image' => 'product-aws'],
+            ['name' => 'Fortinet', 'slug' => 'fortinet', 'description' => 'Seguridad perimetral y endpoint.', 'image' => 'product-firewall'],
+            ['name' => 'APC', 'slug' => 'apc', 'description' => 'Energía y UPS para data center.', 'image' => 'product-ups'],
+            ['name' => 'HP', 'slug' => 'hp', 'description' => 'Workstations y hardware de desarrollo.', 'image' => 'product-workstation'],
+            ['name' => 'Open9', 'slug' => 'open9', 'description' => 'Software, DevOps y paquetes propios.', 'image' => 'product-devops'],
+        ];
+
+        $brands = [];
+        foreach ($definitions as $index => $data) {
+            $brands[$data['slug']] = ProductBrand::query()->updateOrCreate(
+                ['slug' => $data['slug']],
+                [
+                    'name' => $data['name'],
+                    'description' => $data['description'],
+                    'image' => $this->referenceImage($data['image'], 400, 400),
+                    'sort_order' => $index + 1,
+                    'status' => 'active',
+                ],
+            );
+        }
+
+        return $brands;
+    }
+
+    /**
+     * @param  array<string, ProductCategory>  $categories
+     * @param  array<string, ProductBrand>  $brands
+     */
+    private function seedProducts(array $categories, array $brands): void
     {
         $products = [
             [
                 'name' => 'Servidor Rack 2U Xeon',
                 'slug' => 'servidor-rack-2u',
                 'category' => 'hardware',
+                'brand' => 'dell',
                 'price' => 4500,
                 'description' => 'Servidor 2U con dual Xeon, 128 GB RAM, 4× NVMe 1.92 TB y iDRAC. Ideal para virtualización y bases de datos.',
                 'badge' => 'Nuevo',
@@ -61,6 +98,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Licencia Cloud Pro',
                 'slug' => 'licencia-cloud-pro',
                 'category' => 'cloud',
+                'brand' => 'aws',
                 'price' => 299,
                 'description' => 'Paquete mensual: monitoreo 24/7, backups automatizados y soporte L2 en AWS, Azure o GCP.',
                 'badge' => 'Popular',
@@ -72,6 +110,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Switch Managed 48 puertos PoE+',
                 'slug' => 'switch-managed-48',
                 'category' => 'hardware',
+                'brand' => 'cisco',
                 'price' => 1890,
                 'description' => 'Switch capa 3, 48 puertos Gigabit PoE+, 4× SFP+ 10G. Gestión web, CLI y SNMP.',
                 'badge' => null,
@@ -83,6 +122,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'NAS Empresarial 8 bahías',
                 'slug' => 'nas-empresarial-8',
                 'category' => 'hardware',
+                'brand' => 'synology',
                 'price' => 3200,
                 'description' => 'Almacenamiento en red con RAID 6, replicación snapshot y acceso SMB/NFS/iSCSI.',
                 'badge' => 'Oferta',
@@ -94,6 +134,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Suite DevOps Anual',
                 'slug' => 'suite-devops-anual',
                 'category' => 'software',
+                'brand' => 'open9',
                 'price' => 1200,
                 'description' => 'Licencia anual: CI/CD, registry de contenedores, monitoreo y gestión de secrets para hasta 25 desarrolladores.',
                 'badge' => null,
@@ -105,6 +146,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Firewall UTM Pro',
                 'slug' => 'firewall-utm-pro',
                 'category' => 'software',
+                'brand' => 'fortinet',
                 'price' => 890,
                 'description' => 'Appliance virtual o físico con IPS, VPN site-to-site, filtrado web y sandboxing de archivos.',
                 'badge' => 'Seguridad',
@@ -116,6 +158,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Kit Cableado Cat6A 100m',
                 'slug' => 'kit-cableado-cat6a',
                 'category' => 'accesorios',
+                'brand' => 'open9',
                 'price' => 450,
                 'description' => '100 m cable Cat6A, 48 conectores RJ45, patch panel 24 puertos y organizadores de rack.',
                 'badge' => null,
@@ -127,6 +170,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'UPS Online 3KVA',
                 'slug' => 'ups-online-3kva',
                 'category' => 'accesorios',
+                'brand' => 'apc',
                 'price' => 980,
                 'description' => 'Sistema de doble conversión online, 3 KVA/2700 W, baterías hot-swap y puerto SNMP.',
                 'badge' => 'Esencial',
@@ -138,6 +182,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Créditos AWS Starter',
                 'slug' => 'creditos-aws-starter',
                 'category' => 'cloud',
+                'brand' => 'aws',
                 'price' => 500,
                 'description' => 'USD 500 en créditos AWS + 8 horas de onboarding: VPC, IAM, RDS y despliegue inicial.',
                 'badge' => 'Cloud',
@@ -149,6 +194,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Workstation Dev Pro',
                 'slug' => 'workstation-dev-pro',
                 'category' => 'hardware',
+                'brand' => 'hp',
                 'price' => 2100,
                 'description' => 'Ryzen 9, 32 GB RAM, SSD NVMe 1 TB, GPU dedicada. Preconfigurada para Docker y desarrollo full-stack.',
                 'badge' => null,
@@ -160,6 +206,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Cluster Kubernetes Gestionado',
                 'slug' => 'cluster-kubernetes-gestionado',
                 'category' => 'cloud',
+                'brand' => 'aws',
                 'price' => 850,
                 'description' => 'Cluster managed 3 nodos con ingress, cert-manager, backups y actualizaciones mensuales incluidas.',
                 'badge' => 'Nuevo',
@@ -171,6 +218,7 @@ class StoreCatalogSeeder extends Seeder
                 'name' => 'Licencia Endpoint Security',
                 'slug' => 'licencia-endpoint-security',
                 'category' => 'software',
+                'brand' => 'fortinet',
                 'price' => 45,
                 'description' => 'Protección EDR por endpoint/año: detección de amenazas, aislamiento y panel centralizado.',
                 'badge' => null,
@@ -182,11 +230,13 @@ class StoreCatalogSeeder extends Seeder
 
         foreach ($products as $index => $data) {
             $category = $categories[$data['category']];
+            $brand = $brands[$data['brand']];
 
             Product::query()->updateOrCreate(
                 ['slug' => $data['slug']],
                 [
                     'product_category_id' => $category->id,
+                    'product_brand_id' => $brand->id,
                     'name' => $data['name'],
                     'description' => $data['description'],
                     'price' => $data['price'],

@@ -22,6 +22,8 @@ Route::get('/projects', [ContentController::class, 'projects']);
 Route::get('/projects/{slug}', [ContentController::class, 'projectShow']);
 Route::get('/services', [ContentController::class, 'services']);
 Route::get('/products', [ContentController::class, 'products']);
+Route::get('/product-brands', [ContentController::class, 'productBrands']);
+Route::get('/products/{slug}', [ContentController::class, 'productShow']);
 
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:10,1');
 Route::post('/chat', [ChatController::class, 'store'])->middleware('throttle:20,1');

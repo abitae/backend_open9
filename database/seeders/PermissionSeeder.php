@@ -49,6 +49,7 @@ class PermissionSeeder extends Seeder
         'service-categories',
         'products',
         'product-categories',
+        'product-brands',
         'orders',
         'payment-settings',
         'clients',

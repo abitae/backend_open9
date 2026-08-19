@@ -23,16 +23,23 @@
     --color-zinc-900: #171717;
     --color-zinc-950: #0a0a0a;
 
-    --color-accent: #4f83ff;
-    --color-accent-content: #315ed1;
+    --color-accent: #0077FF;
+    --color-accent-content: #0044AA;
     --color-accent-foreground: var(--color-white);
+
+    --color-brand: #0077FF;
+    --color-brand-dark: #0044AA;
+    --color-brand-white: #FFFFFF;
+    --color-brand-gray: #E5E5E5;
+    --color-brand-ink: #1A1A1A;
+    --color-brand-black: #0D0D0D;
 }
 
 @layer theme {
     .dark {
-        --color-accent: #7ea5ff;
-        --color-accent-content: #7ea5ff;
-        --color-accent-foreground: var(--color-neutral-900);
+        --color-accent: #0077FF;
+        --color-accent-content: #0077FF;
+        --color-accent-foreground: var(--color-white);
     }
 }
 

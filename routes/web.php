@@ -32,6 +32,7 @@ use App\Livewire\Admin\Orders;
 use App\Livewire\Admin\Payments;
 use App\Livewire\Admin\PaymentSettings;
 use App\Livewire\Admin\Permissions;
+use App\Livewire\Admin\ProductBrands;
 use App\Livewire\Admin\ProductCategories;
 use App\Livewire\Admin\Products;
 use App\Livewire\Admin\ProjectCategories;
@@ -143,6 +144,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('service-categories', ServiceCategories::class)->middleware('permission:service-categories.view')->name('service-categories.index');
         Route::get('products', Products::class)->middleware('permission:products.view')->name('products.index');
         Route::get('product-categories', ProductCategories::class)->middleware('permission:product-categories.view')->name('product-categories.index');
+        Route::get('product-brands', ProductBrands::class)->middleware('permission:product-brands.view')->name('product-brands.index');
         Route::get('orders', Orders::class)->middleware('permission:orders.view')->name('orders.index');
         Route::get('payment-settings', PaymentSettings::class)->middleware('permission:payment-settings.view')->name('payment-settings.index');
         Route::get('clients', Clients::class)->middleware('permission:clients.view')->name('clients.index');

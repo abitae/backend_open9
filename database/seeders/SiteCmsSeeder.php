@@ -30,8 +30,11 @@ class SiteCmsSeeder extends Seeder
         StorageSetting::query()->firstOrCreate(['id' => 1], ['driver' => 'local']);
 
         SiteBranding::query()->updateOrCreate(['id' => 1], [
-            'site_name' => 'OPEN9',
+            'site_name' => '',
             'tagline' => 'Tecnología integral para tu empresa',
+            'logo_path' => '/logo_normal.png',
+            'logo_dark_path' => '/logo_black.png',
+            'favicon_path' => '/favicon.png',
             'background_video_url' => 'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260315_073750_51473149-4350-4920-ae24-c8214286f323.mp4',
             'contact_email' => 'hola@open9.dev',
             'contact_phone' => '+51 999 000 000',

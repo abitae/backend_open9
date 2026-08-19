@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
+ * @property int|null $product_category_id
+ * @property int|null $product_brand_id
  * @property string $name
  * @property string $slug
  * @property string|null $description
@@ -39,5 +41,13 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    /**
+     * @return BelongsTo<ProductBrand, $this>
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(ProductBrand::class, 'product_brand_id');
     }
 }

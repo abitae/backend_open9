@@ -59,7 +59,7 @@
                         <flux:text class="text-xs text-red-600">{{ $message }}</flux:text>
                     @enderror
                     @if ($logoPreview)
-                        <div class="mt-2 rounded-lg border border-zinc-200 bg-[#f7f9ff] p-3 dark:border-zinc-700">
+                        <div class="mt-2 rounded-lg border border-brand-gray bg-white p-3 dark:border-zinc-700 dark:bg-brand-black">
                             <img src="{{ $logoPreview }}" alt="Vista previa del logo" class="h-10 max-w-full object-contain">
                         </div>
                     @endif
@@ -152,13 +152,13 @@
             <div class="rounded-lg border border-zinc-200 p-4 dark:border-zinc-700">
                 <flux:heading size="sm" class="mb-3">Vista previa del frontend</flux:heading>
 
-                <div class="overflow-hidden rounded-xl border border-[#e5eaf5] bg-[#f7f9ff] text-[#111937] shadow-sm">
-                    <div class="flex items-center justify-between gap-2 border-b border-[#e5eaf5] bg-white/90 px-3 py-2.5">
+                <div class="overflow-hidden rounded-xl border border-brand-gray bg-white text-brand-ink shadow-sm">
+                    <div class="flex items-center justify-between gap-2 border-b border-brand-gray bg-white/90 px-3 py-2.5">
                         <div class="flex min-w-0 items-center gap-2">
                             @if ($logoPreview)
-                                <img src="{{ $logoPreview }}" alt="" class="h-7 w-7 shrink-0 object-contain">
+                                <img src="{{ $logoPreview }}" alt="" class="h-7 w-auto max-w-32 shrink-0 object-contain">
                             @else
-                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#eef3ff] text-[10px] font-bold text-[#315ed1]">O9</span>
+                                <x-brand-logo variant="light" class="h-7 max-w-32" />
                             @endif
                             @if ($siteLabel)
                                 <span class="truncate text-sm font-semibold">{{ $siteLabel }}</span>
@@ -172,12 +172,12 @@
                         <div class="h-16 rounded-lg bg-white/70" aria-hidden></div>
                     </div>
 
-                    <div class="border-t border-[#e5eaf5] bg-white/95 px-3 py-3">
+                    <div class="border-t border-brand-gray bg-white/95 px-3 py-3">
                         <p class="text-[10px] font-medium uppercase tracking-wider text-[#7d89a0]">Footer</p>
                         <p class="mt-2 line-clamp-3 text-xs leading-relaxed text-[#53617a]">{{ $footerBlurb }}</p>
                         <p class="mt-2 text-[10px] text-[#7d89a0]">{{ $copyright }}</p>
                         @if (filled($form['tagline'] ?? null))
-                            <p class="mt-1 text-[10px] text-[#315ed1]">{{ $form['tagline'] }}</p>
+                            <p class="mt-1 text-[10px] text-brand-dark">{{ $form['tagline'] }}</p>
                         @endif
                     </div>
                 </div>

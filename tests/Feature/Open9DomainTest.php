@@ -14,6 +14,7 @@ use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
 use App\Models\Certificate;
+use App\Models\Client;
 use App\Models\Contact;
 use App\Models\Course;
 use App\Models\CourseCategory;
@@ -23,6 +24,7 @@ use App\Models\CourseModule;
 use App\Models\Instructor;
 use App\Models\MediaFile;
 use App\Models\NewsletterSubscriber;
+use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Project;
 use App\Models\ProjectCategory;
@@ -98,7 +100,51 @@ it('renders the admin dashboard for the seeded super admin', function (): void {
         ->assertSee('Login con Google')
         ->assertSee('Ingresos academia')
         ->assertSee('OPEN9')
-        ->assertSee('Ver sitio público');
+        ->assertSee('Ver sitio público')
+        ->assertSee('Accesos rápidos')
+        ->assertSee('Actividad de 6 meses');
+});
+
+it('highlights pending work and recent activity on the admin dashboard', function (): void {
+    $this->seed(DatabaseSeeder::class);
+    $this->travelTo(now()->setTime(10, 15));
+
+    $admin = User::query()->where('email', 'admin@open9.dev')->firstOrFail();
+
+    Contact::factory()->create([
+        'name' => 'Ada Contacto Dashboard',
+        'email' => 'ada.dashboard@example.com',
+        'status' => 'new',
+    ]);
+
+    Order::query()->create([
+        'order_code' => 'ORD-DASH-1',
+        'buyer_name' => 'Grace Pedido',
+        'buyer_email' => 'grace.dash@example.com',
+        'total' => 199.50,
+        'currency' => 'PEN',
+        'status' => 'pending',
+        'payment_status' => 'unpaid',
+    ]);
+
+    Client::factory()->create([
+        'name' => 'Cliente Nuevo Dashboard',
+        'email' => 'cliente.dash@example.com',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.dashboard'))
+        ->assertOk()
+        ->assertSee('Buenos días, Administrador')
+        ->assertSee('Pendientes de atención')
+        ->assertSee('pedido pendiente de pago')
+        ->assertSee('contactos nuevos por revisar')
+        ->assertSee('Ada Contacto Dashboard')
+        ->assertSee('ORD-DASH-1')
+        ->assertSee('Grace Pedido')
+        ->assertSee('Cliente Nuevo Dashboard')
+        ->assertSee('Nuevo')
+        ->assertSee('Pendiente');
 });
 
 it('stores public contact messages', function (): void {
@@ -162,6 +208,30 @@ it('renders every admin route with the seeded super admin', function (): void {
         'admin.newsletter.index',
         'admin.media.index',
         'admin.settings.index',
+        'admin.storage-settings.index',
+        'admin.site-branding.index',
+        'admin.footer-link-groups.index',
+        'admin.footer-links.index',
+        'admin.social-links.index',
+        'admin.home-stats.index',
+        'admin.home-hero-panel.index',
+        'admin.home-hero-showcase.index',
+        'admin.home-feature-cards.index',
+        'admin.home-workflow-steps.index',
+        'admin.home-quick-links.index',
+        'admin.home-pricing-plans.index',
+        'admin.home-section-headers.index',
+        'admin.legal-pages.index',
+        'admin.ai-chat.index',
+        'admin.services.index',
+        'admin.service-categories.index',
+        'admin.products.index',
+        'admin.product-categories.index',
+        'admin.product-brands.index',
+        'admin.orders.index',
+        'admin.payment-settings.index',
+        'admin.clients.index',
+        'admin.social-login.index',
     ])->each(fn (string $routeName) => $this->actingAs($admin)->get(route($routeName))->assertOk());
 
     $course = Course::query()->firstOrFail();

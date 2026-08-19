@@ -20,6 +20,7 @@ use App\Models\HomeWorkflowStep;
 use App\Models\LegalPage;
 use App\Models\PaymentSetting;
 use App\Models\Product;
+use App\Models\ProductBrand;
 use App\Models\Project;
 use App\Models\Service;
 use App\Models\Setting;
@@ -27,6 +28,7 @@ use App\Models\SiteBranding;
 use App\Models\SocialLink;
 use App\Models\SocialLoginSetting;
 use App\Models\Testimonial;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 
 class SiteConfigService
@@ -60,9 +62,9 @@ class SiteConfigService
                 'branding' => [
                     'site_name' => filled($branding->site_name) ? $branding->site_name : null,
                     'tagline' => $branding->tagline,
-                    'logo_url' => $this->media->url($branding->logo_path),
-                    'logo_dark_url' => $this->media->url($branding->logo_dark_path),
-                    'favicon_url' => $this->media->url($branding->favicon_path),
+                    'logo_url' => $this->media->url($branding->logo_path) ?? $this->media->url('/logo_normal.png'),
+                    'logo_dark_url' => $this->media->url($branding->logo_dark_path) ?? $this->media->url('/logo_black.png'),
+                    'favicon_url' => $this->media->url($branding->favicon_path) ?? $this->media->url('/favicon.png'),
                     'hero' => [
                         'title' => $branding->hero_title,
                         'subtitle' => $branding->hero_subtitle,
@@ -436,27 +438,49 @@ class SiteConfigService
     /**
      * @return list<array<string, mixed>>
      */
-    public function products(): array
+    public function productBrands(): array
+    {
+        return ProductBrand::query()
+            ->where('status', RecordStatus::Active)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->map(fn (ProductBrand $brand): array => $this->formatProductBrand($brand))
+            ->all();
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    public function products(?string $brandSlug = null): array
     {
         return Product::query()
             ->where('status', PublishStatus::Published)
-            ->with('category')
+            ->with(['category', 'brand'])
+            ->when($brandSlug, function (Builder $query) use ($brandSlug): void {
+                $query->whereHas(
+                    'brand',
+                    fn (Builder $brand): Builder => $brand->where('slug', $brandSlug)->where('status', RecordStatus::Active)
+                );
+            })
             ->orderBy('sort_order')
             ->get()
-            ->map(fn (Product $product): array => [
-                'id' => (string) $product->id,
-                'slug' => $product->slug,
-                'name' => $product->name,
-                'category' => $product->category?->name,
-                'price' => (float) $product->price,
-                'currency' => strtoupper($product->currency ?: 'USD'),
-                'prices' => $this->productPrices($product),
-                'description' => $product->description,
-                'rating' => (float) $product->rating,
-                'badge' => $product->badge,
-                'stock' => $product->stock,
-                'image_url' => $this->media->url($product->main_image),
-            ])->all();
+            ->map(fn (Product $product): array => $this->formatProduct($product))
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function product(string $slug): ?array
+    {
+        $product = Product::query()
+            ->where('slug', $slug)
+            ->where('status', PublishStatus::Published)
+            ->with(['category', 'brand'])
+            ->first();
+
+        return $product ? $this->formatProduct($product, detailed: true) : null;
     }
 
     /**
@@ -525,6 +549,54 @@ class SiteConfigService
         $rate = is_numeric($setting) ? (float) $setting : 3.75;
 
         return max(0.01, $rate);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatProduct(Product $product, bool $detailed = false): array
+    {
+        $data = [
+            'id' => (string) $product->id,
+            'slug' => $product->slug,
+            'name' => $product->name,
+            'category' => $product->category?->name,
+            'brand' => $product->brand?->name,
+            'brand_slug' => $product->brand?->slug,
+            'brand_image_url' => $this->media->url($product->brand?->image),
+            'price' => (float) $product->price,
+            'currency' => strtoupper($product->currency ?: 'USD'),
+            'prices' => $this->productPrices($product),
+            'description' => $product->description,
+            'rating' => (float) $product->rating,
+            'badge' => $product->badge,
+            'stock' => $product->stock,
+            'image_url' => $this->media->url($product->main_image),
+        ];
+
+        if ($detailed) {
+            $data['gallery'] = collect($product->gallery ?? [])
+                ->map(fn (string $path): ?string => $this->media->url($path))
+                ->filter()
+                ->values()
+                ->all();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formatProductBrand(ProductBrand $brand): array
+    {
+        return [
+            'id' => (string) $brand->id,
+            'slug' => $brand->slug,
+            'name' => $brand->name,
+            'description' => $brand->description,
+            'image_url' => $this->media->url($brand->image),
+        ];
     }
 
     /**

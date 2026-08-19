@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Product;
+use App\Models\ProductBrand;
+use App\Models\ProductCategory;
 use Illuminate\Support\Str;
 
 class Products extends BaseResourceIndex
@@ -16,18 +18,24 @@ class Products extends BaseResourceIndex
     protected string $description = 'Catálogo de la tienda.';
 
     /** @var list<string> */
-    protected array $with = ['category'];
+    protected array $with = ['category', 'brand'];
 
     /** @var array<string, string> */
-    protected array $columns = ['id' => 'ID', 'name' => 'Nombre', 'price' => 'Precio', 'stock' => 'Stock', 'status' => 'Estado'];
+    protected array $columns = ['id' => 'ID', 'name' => 'Nombre', 'brand.name' => 'Marca', 'price' => 'Precio', 'stock' => 'Stock', 'status' => 'Estado'];
 
     /** @var array<string, array<string, mixed>> */
     protected array $fields = [
         'product_category_id' => [
             'label' => 'Categoría',
             'type' => 'select',
-            'options' => ['model' => \App\Models\ProductCategory::class, 'label' => 'name'],
+            'options' => ['model' => ProductCategory::class, 'label' => 'name'],
             'rules' => ['nullable', 'integer', 'exists:product_categories,id'],
+        ],
+        'product_brand_id' => [
+            'label' => 'Marca',
+            'type' => 'select',
+            'options' => ['model' => ProductBrand::class, 'label' => 'name'],
+            'rules' => ['nullable', 'integer', 'exists:product_brands,id'],
         ],
         'name' => ['label' => 'Nombre', 'rules' => ['required', 'string', 'max:255']],
         'slug' => ['label' => 'Slug', 'rules' => ['required', 'string', 'max:255'], 'unique' => true],

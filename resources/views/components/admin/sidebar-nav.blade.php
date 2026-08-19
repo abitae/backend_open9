@@ -120,7 +120,7 @@
 <flux:sidebar.group
     :heading="__('Página Tienda')"
     expandable
-    :expanded="request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.orders.*', 'admin.payment-settings.*', 'admin.clients.*', 'admin.social-login.*')"
+    :expanded="request()->routeIs('admin.products.*', 'admin.product-categories.*', 'admin.product-brands.*', 'admin.orders.*', 'admin.payment-settings.*', 'admin.clients.*', 'admin.social-login.*')"
     class="grid"
 >
     @can('products.view')
@@ -128,6 +128,9 @@
     @endcan
     @can('product-categories.view')
         <flux:sidebar.item icon="tag" :href="route('admin.product-categories.index')" :current="request()->routeIs('admin.product-categories.*')" wire:navigate>{{ __('Tienda — categorías') }}</flux:sidebar.item>
+    @endcan
+    @can('product-brands.view')
+        <flux:sidebar.item icon="building-storefront" :href="route('admin.product-brands.index')" :current="request()->routeIs('admin.product-brands.*')" wire:navigate>{{ __('Tienda — marcas') }}</flux:sidebar.item>
     @endcan
     @can('orders.view')
         <flux:sidebar.item icon="clipboard-document-list" :href="route('admin.orders.index')" :current="request()->routeIs('admin.orders.*')" wire:navigate>{{ __('Tienda — pedidos') }}</flux:sidebar.item>
