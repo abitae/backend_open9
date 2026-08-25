@@ -76,7 +76,7 @@ class Open9DemoSeeder extends Seeder
                 ['user_id' => $user->id],
                 [
                     'document_type' => 'DNI',
-                    'document_number' => fake()->unique()->numerify('########'),
+                    'document_number' => str_pad((string) (70000000 + $user->id), 8, '0', STR_PAD_LEFT),
                     'city' => 'Lima',
                     'country' => 'Peru',
                     'bio' => 'Equipo OPEN9 — automatización, inteligencia artificial y software a medida.',
@@ -228,7 +228,7 @@ class Open9DemoSeeder extends Seeder
                     'user_id' => $index === 1 ? $student->id : null,
                     'full_name' => "Alumno Demo {$courseIndex}{$index}",
                     'document_type' => 'DNI',
-                    'document_number' => fake()->unique()->numerify('########'),
+                    'document_number' => sprintf('%08d', 41000000 + ($courseIndex * 10) + $index),
                     'email' => "alumno{$courseIndex}{$index}@open9.dev",
                     'phone' => '+51 988 000 000',
                     'city' => 'Lima',
