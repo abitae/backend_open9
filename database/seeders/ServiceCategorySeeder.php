@@ -4,18 +4,17 @@ namespace Database\Seeders;
 
 use App\Models\ServiceCategory;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class ServiceCategorySeeder extends Seeder
 {
     public function run(): void
     {
         $categories = [
-            ['name' => 'Consultoría', 'slug' => 'consultoria', 'description' => 'Diagnóstico, arquitectura y roadmap tecnológico.'],
-            ['name' => 'Cloud & DevOps', 'slug' => 'cloud-devops', 'description' => 'Migración, CI/CD y operación en AWS, Azure y GCP.'],
-            ['name' => 'Desarrollo', 'slug' => 'desarrollo', 'description' => 'Software web, mobile e integraciones a medida.'],
-            ['name' => 'Infraestructura', 'slug' => 'infraestructura', 'description' => 'Hardware, servidores, redes y data centers.'],
-            ['name' => 'Seguridad', 'slug' => 'seguridad', 'description' => 'Hardening, cumplimiento y respuesta a incidentes.'],
+            ['name' => 'Automatización', 'slug' => 'automatizacion', 'description' => 'Procesos, flujos y eliminación de tareas repetitivas.'],
+            ['name' => 'Inteligencia artificial', 'slug' => 'inteligencia-artificial', 'description' => 'Agentes, modelos y decisiones asistidas por IA.'],
+            ['name' => 'Software a medida', 'slug' => 'desarrollo', 'description' => 'Sistemas web, mobile e integraciones pensados para tu operación.'],
+            ['name' => 'Datos y dashboards', 'slug' => 'datos', 'description' => 'Indicadores en tiempo real para gerencia y operación.'],
+            ['name' => 'Atención al cliente', 'slug' => 'atencion', 'description' => 'Chatbots, WhatsApp y agentes de respuesta inmediata.'],
         ];
 
         foreach ($categories as $index => $data) {

@@ -102,10 +102,35 @@ it('returns project details and 404 for unknown slugs', function (): void {
         ->assertJsonPath('message', 'Proyecto no encontrado.');
 });
 
-it('lists published services and products from the seeder', function (): void {
-    $this->getJson('/api/services')
+it('publishes the spanish automation homepage copy from seeders', function (): void {
+    $home = $this->getJson('/api/home')->assertOk();
+
+    $home->assertJsonPath('hero_panel.headline.highlight', 'automatización')
+        ->assertJsonPath('hero_panel.cta.label', 'Llevar mi empresa al siguiente nivel')
+        ->assertJsonPath('section_headers.platform_solutions.title_highlight', 'tu rubro');
+
+    $serviceTitles = collect($home->json('feature_cards'))
+        ->where('card_type', 'service')
+        ->pluck('title');
+    $industryTitles = collect($home->json('feature_cards'))
+        ->where('card_type', 'solution')
+        ->pluck('title');
+
+    expect($serviceTitles)->toContain('Automatización', 'Inteligencia artificial', 'Chatbots y agentes inteligentes')
+        ->and($industryTitles)->toContain('Inmobiliarias', 'Restaurantes', 'Clínicas', 'Comercios', 'Estudios contables');
+
+    $this->getJson('/api/site')
         ->assertOk()
-        ->assertJsonCount(8, 'data');
+        ->assertJsonPath('contact.email', 'empresario.ia@open9.dev')
+        ->assertJsonPath('branding.tagline', 'Expertos en automatización e inteligencia artificial');
+});
+
+it('lists published services and products from the seeder', function (): void {
+    $response = $this->getJson('/api/services')->assertOk()->assertJsonCount(8, 'data');
+
+    $titles = collect($response->json('data'))->pluck('title');
+
+    expect($titles)->toContain('Automatización de procesos', 'Chatbots y agentes inteligentes');
 
     $this->getJson('/api/products')
         ->assertOk()

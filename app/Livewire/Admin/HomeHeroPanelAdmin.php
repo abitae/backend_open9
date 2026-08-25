@@ -241,20 +241,20 @@ class HomeHeroPanelAdmin extends Component
     protected function defaultPanelSettings(): array
     {
         return [
-            'badge_label' => 'Servicios tecnológicos · open9.dev',
-            'headline_pre' => 'Innovando el',
-            'headline_highlight' => 'futuro tech',
-            'headline_subtitle' => 'Hardware, cloud e',
-            'headline_subtitle_highlight' => 'software a medida',
+            'badge_label' => 'Expertos en automatización · open9.dev',
+            'headline_pre' => 'Expertos en',
+            'headline_highlight' => 'automatización',
+            'headline_subtitle' => 'Transformamos procesos manuales en',
+            'headline_subtitle_highlight' => 'soluciones inteligentes',
             'show_site_name_chip' => true,
-            'description' => 'Diseñamos, desplegamos y mantenemos infraestructura en servidores físicos y virtuales, con integración en AWS, Azure y Google Cloud.',
-            'cta_label' => 'Solicitar cotización',
+            'description' => 'Diseñamos automatizaciones, inteligencia artificial y software a medida que impulsan tu negocio: ahorras tiempo, reduces costos y aumentan resultados.',
+            'cta_label' => 'Llevar mi empresa al siguiente nivel',
             'cta_url' => '/contacto',
-            'cta_icon' => 'Download',
-            'quote_kicker' => 'Infraestructura · Cloud · Desarrollo',
-            'quote_primary' => 'Tu partner tecnológico',
-            'quote_secondary' => 'de principio a fin.',
-            'quote_footer' => 'open9.dev',
+            'cta_icon' => 'Rocket',
+            'quote_kicker' => 'Automatización · IA · Software a medida',
+            'quote_primary' => 'Tecnología que impulsa',
+            'quote_secondary' => 'tu crecimiento.',
+            'quote_footer' => 'www.open9.dev',
             'media_type' => 'none',
         ];
     }

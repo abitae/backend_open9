@@ -29,7 +29,7 @@ class BlogContentSeeder extends Seeder
 
     private function seedTags(): void
     {
-        foreach (['Laravel', 'Livewire', 'AWS', 'Azure', 'Docker', 'Kubernetes', 'React', 'Seguridad', 'IA', 'PostgreSQL', 'DevOps', 'Frontend', 'Cloud', 'Hardware'] as $name) {
+        foreach (['Automatización', 'IA', 'WhatsApp', 'Dashboards', 'Laravel', 'Livewire', 'React', 'Integraciones', 'Chatbots', 'Inmobiliarias', 'Clínicas', 'Restaurantes', 'Comercios', 'AWS', 'Azure', 'Docker', 'Kubernetes', 'Seguridad', 'PostgreSQL', 'DevOps', 'Frontend', 'Cloud'] as $name) {
             BlogTag::query()->updateOrCreate(
                 ['slug' => Str::slug($name)],
                 ['name' => $name],
@@ -43,6 +43,62 @@ class BlogContentSeeder extends Seeder
     private function seedPosts(User $editor, $categories, BlogCategory $defaultCategory): void
     {
         $posts = [
+            [
+                'title' => 'Cómo dejar de perder leads en WhatsApp (caso inmobiliaria)',
+                'category' => 'automatizacion',
+                'image' => 'real-estate',
+                'tags' => ['Automatización', 'WhatsApp', 'Inmobiliarias'],
+                'featured' => true,
+                'weeks_ago' => 1,
+                'excerpt' => 'Un agente responde en minutos, califica presupuesto y distrito, y deja al asesor solo las visitas que sí van a concretarse.',
+                'content' => $this->paragraphs(
+                    'En inmobiliarias el fin de semana es cuando más preguntan y cuando menos hay alguien detrás del celular. El lead se enfría.',
+                    'El patrón que repetimos en OPEN9 es simple: cada mensaje crea una ficha, un agente responde lo frecuente (precio, metraje, financiamiento) y un humano agenda la visita.',
+                    'Mide tres números: tiempo de primera respuesta, porcentaje de visitas confirmadas y citas que no llegan. Si no bajas el primero, el resto no mejora.',
+                ),
+            ],
+            [
+                'title' => 'Recordatorios que sí bajan las inasistencias en clínicas',
+                'category' => 'ia',
+                'image' => 'healthcare-tech',
+                'tags' => ['IA', 'Chatbots', 'Clínicas'],
+                'featured' => true,
+                'weeks_ago' => 2,
+                'excerpt' => 'No hace falta un HIS completo. Hace falta confirmar la cita 24 horas y 2 horas antes, y rellenar el hueco con lista de espera.',
+                'content' => $this->paragraphs(
+                    'Recepción no debería pasar la mañana persiguiendo pacientes. Ese trabajo es repetible y se automatiza bien.',
+                    'Un flujo de WhatsApp con dos recordatorios y un botón para reprogramar suele recortar inasistencias a la mitad en el primer trimestre.',
+                    'La IA entra después: clasificar el motivo de la cancelación y sugerir el mejor horario de reemplazo. Primero el recordatorio, luego el modelo.',
+                ),
+            ],
+            [
+                'title' => 'Pedidos de restaurante sin papel ni Excel a medianoche',
+                'category' => 'operacion',
+                'image' => 'restaurant',
+                'tags' => ['Automatización', 'Restaurantes', 'Dashboards'],
+                'featured' => true,
+                'weeks_ago' => 3,
+                'excerpt' => 'La comanda llega a cocina en pantalla, el delivery tiene estados y el cierre de caja sale solo. El dueño duerme.',
+                'content' => $this->paragraphs(
+                    'El dolor no es “falta un sistema famoso”. Es que el pedido se anota dos veces y la caja no cuadra.',
+                    'Empieza por un canal (WhatsApp o web), una pantalla de cocina y un reporte de medios de pago. Eso ya ahorra horas.',
+                    'Cuando eso corre estable, agrega ranking de platos y horarios pico. Ahí la IA puede estimar demanda; no al revés.',
+                ),
+            ],
+            [
+                'title' => 'Qué automatizar primero en un comercio pequeño',
+                'category' => 'operacion',
+                'image' => 'ecommerce',
+                'tags' => ['Automatización', 'Comercios', 'Dashboards'],
+                'featured' => true,
+                'weeks_ago' => 4,
+                'excerpt' => 'Stock, no marketing. Si vendes por Instagram y mostrador sin descontar inventario, estás vendiendo humo.',
+                'content' => $this->paragraphs(
+                    'Muchos dueños piden un chatbot cuando el verdadero hueco es no saber qué hay en anaquel.',
+                    'Prioridad: un catálogo único, descuento de stock por cada venta y un tablero de lo que se movió ayer.',
+                    'El chatbot suma cuando ya no prometes productos agotados. Automatizar el caos solo acelera el caos.',
+                ),
+            ],
             [
                 'title' => 'Cómo construir dashboards administrativos compactos',
                 'category' => 'desarrollo',
@@ -143,7 +199,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'Kubernetes en producción: checklist para equipos pequeños',
-                'category' => 'devops',
+                'category' => 'operacion',
                 'image' => 'blog-k8s',
                 'tags' => ['Kubernetes', 'DevOps', 'Azure'],
                 'featured' => false,
@@ -157,7 +213,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'IA generativa en soporte técnico: casos de uso',
-                'category' => 'carrera-tech',
+                'category' => 'ia',
                 'image' => 'blog-ai',
                 'tags' => ['IA', 'Cloud'],
                 'featured' => false,
@@ -185,7 +241,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'De monolito a microservicios sin perder el control',
-                'category' => 'devops',
+                'category' => 'operacion',
                 'image' => 'blog-microservices',
                 'tags' => ['Docker', 'Cloud', 'PostgreSQL'],
                 'featured' => false,
@@ -199,7 +255,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'Cómo preparar tu carrera tech en 2026',
-                'category' => 'carrera-tech',
+                'category' => 'ia',
                 'image' => 'blog-career',
                 'tags' => ['IA', 'Cloud', 'DevOps'],
                 'featured' => false,
@@ -213,7 +269,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'Monitoreo con Grafana y Prometheus en cloud híbrido',
-                'category' => 'devops',
+                'category' => 'operacion',
                 'image' => 'blog-monitoring',
                 'tags' => ['AWS', 'Azure', 'DevOps'],
                 'featured' => false,
@@ -227,7 +283,7 @@ class BlogContentSeeder extends Seeder
             ],
             [
                 'title' => 'Servidores rack: guía de dimensionamiento 2026',
-                'category' => 'hardware',
+                'category' => 'operacion',
                 'image' => 'server-rack',
                 'tags' => ['Hardware', 'Cloud'],
                 'featured' => false,

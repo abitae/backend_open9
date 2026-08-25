@@ -45,6 +45,10 @@ trait SeedsReferenceImages
         'logistics' => 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d',
         'fintech' => 'https://images.unsplash.com/photo-1563986768494-4dffdc115039',
         'healthcare-tech' => 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d',
+        'real-estate' => 'https://images.unsplash.com/photo-1560518883-ce09059eeffa',
+        'restaurant' => 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0',
+        'restaurant-service' => 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4',
+        'accounting' => 'https://images.unsplash.com/photo-1554224155-6726b3ff858f',
 
         // Blog
         'blog-laravel' => 'https://images.unsplash.com/photo-1555066931-4365d14bab8c',

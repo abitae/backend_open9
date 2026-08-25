@@ -18,12 +18,11 @@ use App\Models\Testimonial;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Services\UniqueCodeService;
+use Database\Seeders\Concerns\SeedsReferenceImages;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-
-use Database\Seeders\Concerns\SeedsReferenceImages;
 
 class Open9DemoSeeder extends Seeder
 {
@@ -80,9 +79,9 @@ class Open9DemoSeeder extends Seeder
                     'document_number' => fake()->unique()->numerify('########'),
                     'city' => 'Lima',
                     'country' => 'Peru',
-                    'bio' => 'Equipo OPEN9 — infraestructura, cloud y desarrollo de software.',
+                    'bio' => 'Equipo OPEN9 — automatización, inteligencia artificial y software a medida.',
                     'profession' => 'Tecnología',
-                    'company' => 'Open9',
+                    'company' => 'OPEN9',
                     'social_links' => ['linkedin' => 'https://linkedin.com/company/open9'],
                 ]
             );
@@ -120,8 +119,8 @@ class Open9DemoSeeder extends Seeder
             ['email' => $data['email']],
             $data + [
                 'phone' => '+51 999 000 000',
-                'bio' => 'Instructor demo con experiencia en proyectos tecnologicos.',
-                'experience' => 'Mas de 8 anos liderando equipos y entrenamientos.',
+                'bio' => 'Instructor con experiencia en automatización, IA y proyectos tecnológicos.',
+                'experience' => 'Más de 8 años liderando equipos y entrenamientos prácticos.',
                 'social_links' => ['website' => 'https://open9.dev'],
                 'status' => 'active',
             ]
@@ -137,10 +136,10 @@ class Open9DemoSeeder extends Seeder
         $category = CourseCategory::query()->firstOrFail();
 
         return collect([
-            ['title' => 'Laravel Administrativo Profesional', 'modality' => 'virtual', 'level' => 'intermedio', 'price' => 690],
-            ['title' => 'Livewire y FluxUI para Backoffice', 'modality' => 'virtual', 'level' => 'avanzado', 'price' => 790],
-            ['title' => 'PostgreSQL para Aplicaciones Web', 'modality' => 'grabado', 'level' => 'basico', 'price' => 390],
-            ['title' => 'Cloud Deploy con Laravel', 'modality' => 'hibrido', 'level' => 'intermedio', 'price' => 890],
+            ['title' => 'Automatización de procesos para empresas', 'modality' => 'virtual', 'level' => 'intermedio', 'price' => 690],
+            ['title' => 'Agentes de IA y chatbots en WhatsApp', 'modality' => 'virtual', 'level' => 'avanzado', 'price' => 790],
+            ['title' => 'Dashboards con datos reales', 'modality' => 'grabado', 'level' => 'basico', 'price' => 390],
+            ['title' => 'Software a medida con Laravel', 'modality' => 'hibrido', 'level' => 'intermedio', 'price' => 890],
         ])->map(function (array $data, int $index) use ($category, $instructors): Course {
             $course = Course::query()->updateOrCreate(
                 ['slug' => Str::slug($data['title'])],
@@ -148,11 +147,11 @@ class Open9DemoSeeder extends Seeder
                     'course_category_id' => $category->id,
                     'instructor_id' => $instructors[$index % $instructors->count()]->id,
                     'title' => $data['title'],
-                    'subtitle' => 'Curso demo Open9',
-                    'description' => 'Programa practico con proyectos reales y enfoque administrativo.',
-                    'objectives' => ['Construir modulos administrativos', 'Aplicar seguridad por roles', 'Publicar en produccion'],
-                    'requirements' => ['PHP basico', 'Laravel basico'],
-                    'target_audience' => ['Desarrolladores', 'Equipos de tecnologia'],
+                    'subtitle' => 'Curso práctico OPEN9',
+                    'description' => 'Programa práctico con casos reales de automatización, IA y software para empresas.',
+                    'objectives' => ['Automatizar un flujo real', 'Medir tiempo y costos ahorrados', 'Publicar en producción'],
+                    'requirements' => ['Uso básico de computadora', 'Un proceso de tu empresa para trabajar'],
+                    'target_audience' => ['Dueños de negocio', 'Equipos de operación y tecnología'],
                     'modality' => $data['modality'],
                     'level' => $data['level'],
                     'duration_hours' => 18 + ($index * 6),
@@ -185,21 +184,21 @@ class Open9DemoSeeder extends Seeder
 
     private function seedCourseStructure(Course $course): void
     {
-        collect(['Fundamentos', 'Construccion', 'Publicacion'])->each(function (string $moduleTitle, int $moduleIndex) use ($course): void {
+        collect(['Fundamentos', 'Construcción', 'Puesta en marcha'])->each(function (string $moduleTitle, int $moduleIndex) use ($course): void {
             CourseModule::query()->updateOrCreate(
                 ['course_id' => $course->id, 'title' => $moduleTitle],
-                ['description' => 'Modulo demo del curso.', 'sort_order' => $moduleIndex + 1, 'status' => 'active']
+                ['description' => 'Módulo práctico del curso.', 'sort_order' => $moduleIndex + 1, 'status' => 'active']
             );
         });
 
-        collect(['Introduccion', 'Practica guiada', 'Reto aplicado', 'Proyecto final'])->each(
+        collect(['Introducción', 'Práctica guiada', 'Reto aplicado', 'Proyecto final'])->each(
             fn (string $lessonTitle, int $lessonIndex): CourseLesson => CourseLesson::query()->updateOrCreate(
                 ['course_id' => $course->id, 'title' => $lessonTitle],
                 [
-                    'description' => 'Leccion demo.',
+                    'description' => 'Lección práctica con ejemplo de empresa.',
                     'image' => 'courses/'.Str::slug($course->title)."/lesson-{$lessonIndex}/cover.jpg",
                     'video_url' => 'https://open9.dev/videos/'.Str::slug($course->title).'-'.$lessonIndex,
-                    'content' => 'Contenido demo de la leccion.',
+                    'content' => 'Contenido de la lección con un caso real en español.',
                     'resources' => [
                         'courses/'.Str::slug($course->title)."/lesson-{$lessonIndex}/slides.pdf",
                         'courses/'.Str::slug($course->title)."/lesson-{$lessonIndex}/files.zip",
@@ -306,42 +305,42 @@ class Open9DemoSeeder extends Seeder
         $testimonials = [
             [
                 'name' => 'Ana Rivera',
-                'profession' => 'CTO',
-                'company' => 'Andes Tech',
+                'profession' => 'Gerente comercial',
+                'company' => 'Inmobiliaria Norte',
                 'type' => 'project',
-                'content' => 'OPEN9 migró nuestro e-commerce B2B sin interrumpir operaciones. El equipo entendió nuestro negocio desde el primer día.',
+                'content' => 'Antes perdíamos consultas el fin de semana. El agente de WhatsApp responde al instante y nosotros solo tomamos las visitas que sí van a cerrar.',
                 'photo' => 'person-1',
             ],
             [
                 'name' => 'Luis Torres',
-                'profession' => 'Director de TI',
-                'company' => 'RetailMax Perú',
+                'profession' => 'Dueño',
+                'company' => 'Sabores del Sur',
                 'type' => 'project',
-                'content' => 'La migración a AWS redujo costos y mejoró tiempos de respuesta. Documentación impecable y soporte post-cutover excelente.',
+                'content' => 'La cocina ve la comanda en pantalla y el cierre de caja sale solo. Recuperamos dos horas cada noche y se acabaron los pedidos extraviados.',
                 'photo' => 'person-2',
             ],
             [
                 'name' => 'Carla Mendoza',
-                'profession' => 'Gerente de Operaciones',
-                'company' => 'Pacífico Express',
+                'profession' => 'Administradora',
+                'company' => 'Clínica San Martín',
                 'type' => 'general',
-                'content' => 'La app de logística que desarrollaron transformó el trabajo de nuestros conductores. Entregas más rápidas y clientes más satisfechos.',
+                'content' => 'Los recordatorios por WhatsApp bajaron las inasistencias a la mitad. Recepción dejó de perseguir pacientes y volvió a atender en ventanilla.',
                 'photo' => 'person-3',
             ],
             [
                 'name' => 'Roberto Sánchez',
-                'profession' => 'CEO',
-                'company' => 'PayAndes',
+                'profession' => 'Socio',
+                'company' => 'Estudio Contable Plus',
                 'type' => 'project',
-                'content' => 'Confiamos en OPEN9 para nuestra pasarela de pagos. Cumplimiento, seguridad y escalabilidad desde el lanzamiento.',
+                'content' => 'Ya no chaseamos PDFs por correo. Cada cliente sube sus comprobantes y sabemos quién está incompleto antes del vencimiento.',
                 'photo' => 'person-4',
             ],
             [
                 'name' => 'María Elena Vargas',
-                'profession' => 'Coordinadora Académica',
-                'company' => 'Open9 Labs',
+                'profession' => 'Gerente',
+                'company' => 'Comercio Andes',
                 'type' => 'course',
-                'content' => 'Los cursos son prácticos y actualizados. Mis equipos aplicaron lo aprendido en Laravel el mismo mes.',
+                'content' => 'Unificamos Instagram, WhatsApp y mostrador. Por fin sé qué se vendió ayer y qué está parado, sin armar Excel el domingo.',
                 'photo' => 'person-5',
             ],
         ];
@@ -364,19 +363,52 @@ class Open9DemoSeeder extends Seeder
 
     private function seedContacts(User $admin): void
     {
-        collect(['new', 'read', 'answered', 'archived'])->each(
-            fn (string $status, int $index): Contact => Contact::query()->create([
-                'name' => "Contacto Demo {$index}",
-                'email' => "contacto{$index}@open9.dev",
-                'phone' => '+51 977 000 000',
-                'subject' => 'Consulta demo',
-                'message' => 'Mensaje recibido desde el formulario publico.',
-                'source' => 'web',
-                'status' => $status,
-                'assigned_to' => $status === 'new' ? null : $admin->id,
-                'answered_at' => $status === 'answered' ? now() : null,
-            ])
-        );
+        $messages = [
+            [
+                'status' => 'new',
+                'name' => 'Patricia Huamán',
+                'email' => 'patricia.huaman@inmobiliarianorte.pe',
+                'subject' => 'Chatbot para consultas de departamentos',
+                'message' => 'Atendemos 40 consultas diarias por WhatsApp y se nos escapan las del fin de semana. Queremos un agente que responda precio, metraje y agende visitas.',
+            ],
+            [
+                'status' => 'read',
+                'name' => 'Jorge Palacios',
+                'email' => 'jorge@saboresdelsur.pe',
+                'subject' => 'Pedidos y cierre de caja',
+                'message' => 'Tenemos un restaurante en Surco. Los pedidos llegan por chat y el cierre lo armamos a mano. ¿Pueden automatizar cocina y caja?',
+            ],
+            [
+                'status' => 'answered',
+                'name' => 'Dra. Elena Quispe',
+                'email' => 'elena.quispe@clinicasanmartin.pe',
+                'subject' => 'Recordatorios de citas',
+                'message' => 'Nuestra clínica tiene 18% de inasistencias. Necesitamos recordatorios por WhatsApp y reprogramación sin saturar recepción.',
+            ],
+            [
+                'status' => 'archived',
+                'name' => 'Marco Díaz',
+                'email' => 'marco@contableplus.pe',
+                'subject' => 'Recolección de comprobantes',
+                'message' => 'Somos un estudio contable con 80 clientes. Perdemos tiempo pidiendo PDFs. Queremos un enlace de carga y un tablero de pendientes.',
+            ],
+        ];
+
+        foreach ($messages as $index => $data) {
+            Contact::query()->updateOrCreate(
+                ['email' => $data['email']],
+                [
+                    'name' => $data['name'],
+                    'phone' => '+51 977 000 00'.$index,
+                    'subject' => $data['subject'],
+                    'message' => $data['message'],
+                    'source' => 'web',
+                    'status' => $data['status'],
+                    'assigned_to' => $data['status'] === 'new' ? null : $admin->id,
+                    'answered_at' => $data['status'] === 'answered' ? now() : null,
+                ],
+            );
+        }
     }
 
     private function seedNewsletter(): void

@@ -98,7 +98,7 @@
             <flux:separator text="Contacto público (/contacto y footer)" />
 
             <div class="grid gap-3 md:grid-cols-2">
-                <flux:input wire:model="form.contact_email" label="Email" placeholder="hola@open9.dev" />
+                <flux:input wire:model="form.contact_email" label="Email" placeholder="empresario.ia@open9.dev" />
                 <flux:input wire:model="form.contact_phone" label="Teléfono" placeholder="+51 999 999 999" />
                 <flux:input wire:model="form.contact_address" label="Dirección / ciudad" class="md:col-span-2" />
                 <flux:input wire:model="form.website_url" label="Sitio web" placeholder="https://open9.dev" class="md:col-span-2" />
